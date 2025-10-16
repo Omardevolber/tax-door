@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>إقرارات الدخل</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #0c223a;
+            --muted: #5d6b7a;
+            --line: #e6edf5;
+            --acc: #2563eb;
+            --acc-2: #1d4ed8;
+            --ok: #16a34a;
+            --warn: #b45309;
+            --bad: #dc2626;
+            --br: 16px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            color: #fff;
+            background-color: #7eb4ef;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #789ab9;
+        }
+
+        /* السهم */
+        .back-btn::before {
+            content: "←";
+            font-size: 24px;
+            color: #ffffff;
+
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 80px auto;
+            padding: 0 20px;
+
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--br);
+            padding: 18px 18px 8px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, .06);
+            border: 1px solid #eef2f7
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            font-weight: 700
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 10px
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid #d6e1f0;
+            background: #fff;
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .15s ease;
+            font-weight: 600
+        }
+
+        .btn.primary {
+            background: var(--acc);
+            border-color: var(--acc-2);
+            color: #fff
+        }
+
+        .btn.primary:hover {
+            background: var(--acc-2)
+        }
+
+        .table-wrap {
+            margin-top: 10px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead th {
+            background: #f2f6fc;
+            color: #1f2a37;
+            font-weight: 700;
+            text-align: right;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle
+        }
+
+        tbody tr:hover {
+            background: #fafcff
+        }
+
+        .name {
+            font-weight: 700
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid
+        }
+
+        .ok {
+            background: #ecfdf5;
+            color: var(--ok);
+            border-color: #bbf7d0
+        }
+
+        .unk {
+            background: #fff7ed;
+            color: var(--warn);
+            border-color: #fed7aa
+        }
+
+        .err {
+            background: #fef2f2;
+            color: var(--bad);
+            border-color: #fecaca
+        }
+
+        .note {
+            margin-top: 10px;
+            color: #8a6114;
+            background: #fff7e6;
+            border: 1px solid #ffe2ad;
+            padding: 10px 12px;
+            border-radius: 12px
+        }
+
+        .empty {
+            padding: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        .spinner {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, .65);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999
+        }
+
+        .spinner.show {
+            display: flex
+        }
+
+        .spin {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 5px solid rgba(37, 99, 235, .15);
+            border-top-color: var(--acc);
+            animation: rot 1s linear infinite
+        }
+
+        @keyframes rot {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .tools .btn {
+            padding: 8px 12px
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back-btn" onclick="window.location.href='home.html'"></button>
+
+    <div class="spinner" id="spinner">
+        <div class="spin"></div>
+    </div>
+
+    <div class="wrap">
+        <div class="card">
+            <h1>إقرارات الدخل</h1>
+            <div class="toolbar">
+                <div class="muted" id="who"></div>
+                <button class="btn primary" id="reloadBtn" title="تحديث البيانات">تحديث</button>
+            </div>
+
+            <div id="warn" class="note" hidden></div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:45%">اسم الإقرار</th>
+                            <th style="width:30%">تنزيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <div class="empty" id="empty" hidden>لا توجد ملفات متاحة.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
+        const DEFAULT_DOOR = "old-door";
+        const DEFAULT_FILETYPE = "اقرارات الدخل";
+        sessionStorage.setItem("userId", "225162155224")
+        const $ = id => document.getElementById(id);
+        const spinner = $("spinner");
+        const tbody = $("tbody");
+        const emptyBox = $("empty");
+        const warn = $("warn");
+        const who = $("who");
+
+        function showSpinner(v = true) { spinner.classList.toggle("show", v); }
+        function getUserId() { return sessionStorage.getItem("userId") || ""; }
+        function baseName(key) { return key?.split("/").pop() || ""; }
+
+        // توليد شارة الحالة
+        function statusBadge(text) {
+            const v = (text || "").trim();
+            let cls = "unk";
+            if (/تم\s*الإرسال/.test(v)) cls = "ok";
+            else if (/غير|خطأ|failed|error/i.test(v)) cls = "err";
+            return `<span class="badge ${cls}">${v || "غير معروف"}</span>`;
+        }
+
+        // استخراج قيمة ترتيب YYYYMM (Number) من period أو اسم الملف
+        function extractPeriodNumber(item) {
+            // أولوية: الحقل period لو موجود
+            if (item.period && /^\d{6}$/.test(item.period)) {
+                return Number(item.period); // YYYYMM
+            }
+            // جرّب من اسم الملف
+            const name = baseName(item.key) || "";
+            const m = name.match(/(\d{6})/);
+            if (m) return Number(m[1]);
+            // fallback: استخدام اسم الملف ترتيبًا نزوليًا
+            // نحول الاسم لـ قيمة قابلة للمقارنة تنازليًا
+            return -Infinity; // يخلي العناصر غير المعروفة تروح آخر القائمة
+        }
+
+        // ترتيب العناصر: الأحدث → الأقدم
+        function sortItems(items) {
+            return items.slice().sort((a, b) => {
+                const pa = extractPeriodNumber(a);
+                const pb = extractPeriodNumber(b);
+                if (pa !== pb) return pb - pa; // نزولي
+                // tie-breaker: نزولي بالاسم
+                const na = (baseName(a.key) || "").toLowerCase();
+                const nb = (baseName(b.key) || "").toLowerCase();
+                if (na < nb) return 1;
+                if (na > nb) return -1;
+                return 0;
+            });
+        }
+
+        // عرض الجدول
+        function render(items) {
+            const sorted = sortItems(Array.isArray(items) ? items : []);
+            tbody.innerHTML = "";
+            emptyBox.hidden = sorted.length !== 0;
+
+            for (const it of sorted) {
+                const periodOrName = it.period ? it.period : baseName(it.key);
+                const url = it.download_url;          // نفس الرابط القادم من أول POST
+                const st = it.status || "غير معروف";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+          <td class="name">${periodOrName}</td>
+          <td class="tools">
+            <button class="btn" onclick="directDownload('${url.replace(/'/g, "\\'")}')">تنزيل</button>
+          </td>
+        `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // تنزيل مباشر لنفس الـ URL بدون أي fetch (يمنع مشاكل CORS)
+        window.directDownload = (url) => {
+            const a = document.createElement("a");
+            a.href = url;
+            a.rel = "noopener noreferrer";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        };
+
+        async function fetchData() {
+            const userId = getUserId();
+
+            if (!userId) {
+                warn.hidden = false;
+                render([]);
+                return;
+            }
+
+            showSpinner(true);
+            warn.hidden = true; warn.textContent = "";
+
+            try {
+                const payload = { userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const raw = await res.json();
+                const data = typeof raw?.body === "string" ? JSON.parse(raw.body) : raw;
+
+                if (!res.ok) throw new Error(data?.message || res.statusText);
+
+                render(data.items || []);
+                if (data.note) {
+                    warn.hidden = false;
+                    warn.textContent = data.note;
+                }
+            } catch (err) {
+                warn.hidden = false;
+                warn.textContent = "خطأ: " + (err?.message || err);
+                render([]);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // init
+        (function () {
+            $("reloadBtn").addEventListener("click", fetchData);
+            if (getUserId()) fetchData();
+            else who.textContent = "لا يوجد userId في sessionStorage";
+        })();
+    </script>
+</body>
+
+</html>
