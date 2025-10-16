@@ -155,16 +155,17 @@
         } else {
             renderUser();
         }
-        function openLegacy() {
-            // بيدوّر على userId أو useId لو كنت مخزّنه بالخطأ قبل كده
+          function openLegacy() {
             const uid = sessionStorage.getItem("userId") || sessionStorage.getItem("useId");
             if (!uid) {
-                alert("❗ مفيش userId في الـ sessionStorage — ارجع سجّل دخول الأول.");
-                return;
+              alert("❗ مفيش userId في الـ sessionStorage — ارجع سجّل دخول الأول.");
+              return;
             }
+        
+            // فتح في نفس التبويب
             const url = "https://2d545906-4abd-4cc3-a694-9d80f68249c9-00-2b5dubctbx6hg.kirk.replit.dev/?userId=" + encodeURIComponent(uid);
-            window.open(url, "_blank"); // افتح في تاب جديدة (غيّرها لـ window.location.href لو عايز نفس الصفحة)
-        }
+            window.location.href = url;
+          }
         async function exchangeCodeForToken(code) {
             const tokenUrl = `${DOMAIN}/oauth2/token`;
             const body = new URLSearchParams({
