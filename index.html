@@ -88,6 +88,14 @@
   <header>لوحة التحكم - Tax Door</header>
   <button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>
 
+  <div class="user-box" id="userBox">
+    <p><strong>👤 الاسم:</strong> <span id="name"></span></p>
+    <p><strong>🧾 اسم المستخدم:</strong> <span id="username"></span></p>
+    <p><strong>📧 البريد الإلكتروني:</strong> <span id="email"></span></p>
+    <p><strong>📞 رقم الهاتف:</strong> <span id="phone"></span></p>
+    <p><strong>🆔 User ID:</strong> <span id="userId"></span></p>
+  </div>
+
   <div class="container">
     <div class="card" onclick="openPage('download_income_declarations.html')">
       <h3>📄 إقرارات الدخل</h3>
@@ -121,12 +129,13 @@
     const username = sessionStorage.getItem("username");
     const email = sessionStorage.getItem("email");
     const phone = sessionStorage.getItem("phone_number");
+    const name = sessionStorage.getItem("name");
 
-    // ✅ تحقق من الجلسة (لو المستخدم داخل من كوجنيتو)
+    // ✅ تحقق من الجلسة
     if (!userId || !username) {
       const code = new URLSearchParams(window.location.search).get("code");
       if (!code) {
-        window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+        window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
       } else {
         exchangeCodeForToken(code);
       }
@@ -159,11 +168,12 @@
 
         const payload = JSON.parse(atob(idToken.split('.')[1]));
 
-        // ✅ تخزين القيم في sessionStorage مباشرة بالمفاتيح المطلوبة
+        // ✅ تخزين القيم
         sessionStorage.setItem("userId", payload.sub);
         sessionStorage.setItem("username", payload['cognito:username']);
         sessionStorage.setItem("email", payload.email || "");
         sessionStorage.setItem("phone_number", payload.phone_number || "");
+        sessionStorage.setItem("name", payload.name || payload.given_name || "");
 
         renderUser();
       } catch (err) {
@@ -173,10 +183,11 @@
     }
 
     function renderUser() {
-      document.getElementById("userId").textContent = sessionStorage.getItem("userId") || "غير متوفر";
+      document.getElementById("name").textContent = sessionStorage.getItem("name") || "غير متوفر";
       document.getElementById("username").textContent = sessionStorage.getItem("username") || "غير متوفر";
       document.getElementById("email").textContent = sessionStorage.getItem("email") || "غير متوفر";
       document.getElementById("phone").textContent = sessionStorage.getItem("phone_number") || "غير متوفر";
+      document.getElementById("userId").textContent = sessionStorage.getItem("userId") || "غير متوفر";
     }
 
     function openPage(page) {
@@ -185,7 +196,7 @@
 
     function logout() {
       sessionStorage.clear();
-      window.location.href = `https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com/login?client_id=4ffqait6u9o2q22u1g39vt0454&redirect_uri=https%3A%2F%2Fomardevolber.github.io%2Ftax-door%2F&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone`;
+      window.location.href = `${DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
     }
   </script>
 </body>
