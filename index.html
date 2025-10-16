@@ -124,25 +124,10 @@
             <h3>📆 الإقرارات الشهرية</h3>
             <p>إدارة وتنزيل الإقرارات الشهرية بسهولة.</p>
         </div>
-        <div class="card" onclick="openPage()">
+        <div class="card" onclick="openLegacy()">
             <h3>لتسجيل جديد</h3>
             <p>ادخال بيانات البوابه الضريبيه القديمه</p>
         </div>
-
-        <script>
-            function openPage() {
-                // جلب الـ userId من sessionStorage
-                const userId = sessionStorage.getItem("userId");
-
-                // لو موجود يفتح اللينك
-                if (userId) {
-                    const url = `https://2d545906-4abd-4cc3-a694-9d80f68249c9-00-2b5dubctbx6hg.kirk.replit.dev/?userId=${userId}`;
-                    window.open(url, "_blank"); // أو استخدم window.location.href لو عايز نفس الصفحة
-                } else {
-                    alert("❗ لم يتم العثور على userId في الجلسة");
-                }
-            }
-        </script>
 
     </div>
 
@@ -170,7 +155,16 @@
         } else {
             renderUser();
         }
-
+        function openLegacy() {
+            // بيدوّر على userId أو useId لو كنت مخزّنه بالخطأ قبل كده
+            const uid = sessionStorage.getItem("userId") || sessionStorage.getItem("useId");
+            if (!uid) {
+                alert("❗ مفيش userId في الـ sessionStorage — ارجع سجّل دخول الأول.");
+                return;
+            }
+            const url = "https://2d545906-4abd-4cc3-a694-9d80f68249c9-00-2b5dubctbx6hg.kirk.replit.dev/?userId=" + encodeURIComponent(uid);
+            window.open(url, "_blank"); // افتح في تاب جديدة (غيّرها لـ window.location.href لو عايز نفس الصفحة)
+        }
         async function exchangeCodeForToken(code) {
             const tokenUrl = `${DOMAIN}/oauth2/token`;
             const body = new URLSearchParams({
