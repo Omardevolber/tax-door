@@ -1,200 +1,232 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة التحكم | Tax Door</title>
-  <style>
-    body {
-      font-family: 'Cairo', sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    header {
-      width: 100%;
-      background: #004c91;
-      color: white;
-      padding: 20px 0;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .user-box {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      width: 90%;
-      max-width: 600px;
-      margin-top: 25px;
-      text-align: left;
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      width: 90%;
-      max-width: 1000px;
-      margin-top: 40px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 15px;
-      padding: 30px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-
-    .card h3 { color: #004c91; margin-bottom: 10px; }
-    .card p { color: #555; font-size: 14px; }
-
-    button.logout {
-      background: #d9534f;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      cursor: pointer;
-      margin-top: 30px;
-      transition: background 0.3s ease;
-    }
-
-    button.logout:hover { background: #b52b27; }
-
-    footer {
-      margin-top: auto;
-      padding: 15px;
-      color: #888;
-      font-size: 13px;
-    }
-  </style>
-</head>
-<body>
-  <header>لوحة التحكم - Tax Door</header>
-  <button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>
-
-  <div class="user-box" id="userBox">
-    <p><strong>👤 company name:</strong> <span id="name"></span></p>
-    
-  </div>
-
-  <div class="container">
-    <div class="card" onclick="openPage('download_income_declarations.html')">
-      <h3>📄 إقرارات الدخل</h3>
-      <p>تحميل جميع إقرارات ضريبة الدخل المسجلة.</p>
-    </div>
-
-    <div class="card" onclick="openPage('download_portal_payment_receipts.html')">
-      <h3>💳 إيصالات الدفع الإلكتروني</h3>
-      <p>عرض وتحميل إيصالات الدفع من البوابة.</p>
-    </div>
-
-    <div class="card" onclick="openPage('download_withholding_.html')">
-      <h3>📑 نماذج الخصم والتحصيل</h3>
-      <p>إدارة ملفات الخصم (نموذج 41).</p>
-    </div>
-
-    <div class="card" onclick="openPage('monthly-decleration.html')">
-      <h3>📆 الإقرارات الشهرية</h3>
-      <p>إدارة وتنزيل الإقرارات الشهرية بسهولة.</p>
-    </div>
-  </div>
-
-  <footer>© 2025 Tax Door System</footer>
-
-  <script>
-    const CLIENT_ID = "4ffqait6u9o2q22u1g39vt0454";
-    const DOMAIN = "https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com";
-    const REDIRECT_URI = "https://omardevolber.github.io/tax-door/";
-
-    const userId = sessionStorage.getItem("userId");
-    const username = sessionStorage.getItem("username");
-    const email = sessionStorage.getItem("email");
-    const phone = sessionStorage.getItem("phone_number");
-    const name = sessionStorage.getItem("name");
-
-    // ✅ تحقق من الجلسة
-    if (!userId || !username) {
-      const code = new URLSearchParams(window.location.search).get("code");
-      if (!code) {
-        window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-      } else {
-        exchangeCodeForToken(code);
-      }
-    } else {
-      renderUser();
-    }
-
-    async function exchangeCodeForToken(code) {
-      const tokenUrl = `${DOMAIN}/oauth2/token`;
-      const body = new URLSearchParams({
-        grant_type: "authorization_code",
-        client_id: CLIENT_ID,
-        code,
-        redirect_uri: REDIRECT_URI
-      });
-
-      try {
-        const res = await fetch(tokenUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body
-        });
-
-        const data = await res.json();
-        const idToken = data.id_token;
-        if (!idToken) {
-          alert("فشل تسجيل الدخول من كوجنيتو");
-          return;
+    <meta charset="UTF-8">
+    <title>لوحة التحكم | Tax Door</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        header {
+            width: 100%;
+            background: #004c91;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+        }
 
-        // ✅ تخزين القيم
-        sessionStorage.setItem("userId", payload.sub);
-        sessionStorage.setItem("username", payload['cognito:username']);
-        sessionStorage.setItem("email", payload.email || "");
-        sessionStorage.setItem("phone_number", payload.phone_number || "");
-        sessionStorage.setItem("name", payload.name || payload.given_name || "");
+        .user-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 25px;
+            text-align: left;
+        }
 
-        renderUser();
-      } catch (err) {
-        console.error(err);
-        alert("حدث خطأ أثناء تسجيل الدخول");
-      }
-    }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 40px;
+        }
 
-    function renderUser() {
-      document.getElementById("name").textContent = sessionStorage.getItem("name") || "غير متوفر";
-      document.getElementById("username").textContent = sessionStorage.getItem("username") || "غير متوفر";
-      document.getElementById("email").textContent = sessionStorage.getItem("email") || "غير متوفر";
-      document.getElementById("phone").textContent = sessionStorage.getItem("phone_number") || "غير متوفر";
-      document.getElementById("userId").textContent = sessionStorage.getItem("userId") || "غير متوفر";
-    }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-    function openPage(page) {
-      window.location.href = page;
-    }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
 
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = `https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com/login?client_id=4ffqait6u9o2q22u1g39vt0454&response_type=code&scope=email+openid+phone+profile&redirect_uri=https%3A%2F%2Fomardevolber.github.io%2Ftax-door%2F`;
-    }
-  </script>
+        .card h3 {
+            color: #004c91;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #555;
+            font-size: 14px;
+        }
+
+        button.logout {
+            background: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s ease;
+        }
+
+        button.logout:hover {
+            background: #b52b27;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 15px;
+            color: #888;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>لوحة التحكم - Tax Door</header>
+    <button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>
+
+    <div class="user-box" id="userBox">
+        <p><strong>👤 company name:</strong> <span id="name"></span></p>
+
+    </div>
+
+    <div class="container">
+        <div class="card" onclick="openPage('download_income_declarations.html')">
+            <h3>📄 إقرارات الدخل</h3>
+            <p>تحميل جميع إقرارات ضريبة الدخل المسجلة.</p>
+        </div>
+
+        <div class="card" onclick="openPage('download_portal_payment_receipts.html')">
+            <h3>💳 إيصالات الدفع الإلكتروني</h3>
+            <p>عرض وتحميل إيصالات الدفع من البوابة.</p>
+        </div>
+
+        <div class="card" onclick="openPage('download_withholding_.html')">
+            <h3>📑 نماذج الخصم والتحصيل</h3>
+            <p>إدارة ملفات الخصم (نموذج 41).</p>
+        </div>
+
+        <div class="card" onclick="openPage('monthly-decleration.html')">
+            <h3>📆 الإقرارات الشهرية</h3>
+            <p>إدارة وتنزيل الإقرارات الشهرية بسهولة.</p>
+        </div>
+        <div class="card" onclick="openPage()">
+            <h3>لتسجيل جديد</h3>
+            <p>ادخال بيانات البوابه الضريبيه القديمه</p>
+        </div>
+
+        <script>
+            function openPage() {
+                // جلب الـ userId من sessionStorage
+                
+
+                // لو موجود يفتح اللينك
+                if (userId) {
+                    const url = `https://2d545906-4abd-4cc3-a694-9d80f68249c9-00-2b5dubctbx6hg.kirk.replit.dev/?userId=${userId}`;
+                    window.open(url, "_blank"); // أو استخدم window.location.href لو عايز نفس الصفحة
+                } else {
+                    alert("❗ لم يتم العثور على userId في الجلسة");
+                }
+            }
+        </script>
+
+    </div>
+
+    <footer>© 2025 Tax Door System</footer>
+
+    <script>
+        const CLIENT_ID = "4ffqait6u9o2q22u1g39vt0454";
+        const DOMAIN = "https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com";
+        const REDIRECT_URI = "https://omardevolber.github.io/tax-door/";
+
+        const userId = sessionStorage.getItem("userId");
+        const username = sessionStorage.getItem("username");
+        const email = sessionStorage.getItem("email");
+        const phone = sessionStorage.getItem("phone_number");
+        const name = sessionStorage.getItem("name");
+
+        // ✅ تحقق من الجلسة
+        if (!userId || !username) {
+            const code = new URLSearchParams(window.location.search).get("code");
+            if (!code) {
+                window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+            } else {
+                exchangeCodeForToken(code);
+            }
+        } else {
+            renderUser();
+        }
+
+        async function exchangeCodeForToken(code) {
+            const tokenUrl = `${DOMAIN}/oauth2/token`;
+            const body = new URLSearchParams({
+                grant_type: "authorization_code",
+                client_id: CLIENT_ID,
+                code,
+                redirect_uri: REDIRECT_URI
+            });
+
+            try {
+                const res = await fetch(tokenUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body
+                });
+
+                const data = await res.json();
+                const idToken = data.id_token;
+                if (!idToken) {
+                    alert("فشل تسجيل الدخول من كوجنيتو");
+                    return;
+                }
+
+                const payload = JSON.parse(atob(idToken.split('.')[1]));
+
+                // ✅ تخزين القيم
+                sessionStorage.setItem("userId", payload.sub);
+                sessionStorage.setItem("username", payload['cognito:username']);
+                sessionStorage.setItem("email", payload.email || "");
+                sessionStorage.setItem("phone_number", payload.phone_number || "");
+                sessionStorage.setItem("name", payload.name || payload.given_name || "");
+
+                renderUser();
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ أثناء تسجيل الدخول");
+            }
+        }
+
+        function renderUser() {
+            document.getElementById("name").textContent = sessionStorage.getItem("name") || "غير متوفر";
+            document.getElementById("username").textContent = sessionStorage.getItem("username") || "غير متوفر";
+            document.getElementById("email").textContent = sessionStorage.getItem("email") || "غير متوفر";
+            document.getElementById("phone").textContent = sessionStorage.getItem("phone_number") || "غير متوفر";
+            document.getElementById("userId").textContent = sessionStorage.getItem("userId") || "غير متوفر";
+        }
+
+        function openPage(page) {
+            window.location.href = page;
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = `https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com/login?client_id=4ffqait6u9o2q22u1g39vt0454&response_type=code&scope=email+openid+phone+profile&redirect_uri=https%3A%2F%2Fomardevolber.github.io%2Ftax-door%2F`;
+        }
+    </script>
 </body>
+
 </html>
