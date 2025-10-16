@@ -116,9 +116,13 @@
     const CLIENT_ID = "4ffqait6u9o2q22u1g39vt0454";
     const DOMAIN = "https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com";
     const REDIRECT_URI = "https://omardevolber.github.io/tax-door/";
-
+    
     // ✅ تحقق من الجلسة (لو المستخدم داخل من كوجنيتو)
     const userData = sessionStorage.getItem("cognitoUser");
+    sessionStorage.setItem("userId", user.userId);
+    sessionStorage.setItem("username", user.username);
+    sessionStorage.setItem("email", user.email || "");
+    sessionStorage.setItem("phone", user.phone_number || "");
     if (!userData) {
       window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
     }
