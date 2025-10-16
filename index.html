@@ -1,1 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    h1 { color: #333; }
+    .info { text-align: left; margin-top: 20px; }
+    button {
+      background: #0073bb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>مرحبًا بك 👋</h1>
+    <div id="userInfo" class="info">جارِ تحميل البيانات...</div>
+    <button onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <script>
+    const CLIENT_ID = "4ffqait6u9o2q22u1g39vt0454";
+    const DOMAIN = "https://us-east-1hrn5jyv1p.auth.us-east-1.amazoncognito.com";
+    const REDIRECT_URI = "https://omardevolber.github.io/tax-door/";
+    const REGION = "us-east-1";
+
+    // 1️⃣ لو البيانات محفوظة بالفعل في الجلسة
+    const savedUser = sessionStorage.getItem("cognitoUser");
+    if (savedUser) {
+      renderUser(JSON.parse(savedUser));
+    } else {
+      // 2️⃣ التقط كود التفويض من الـ URL
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) {
+        // لو مفيش كود، ارجعه لصفحة الدخول
+        window.location.href = `${DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+      } else {
+        exchangeCodeForToken(code);
+      }
+    }
+
+    // 3️⃣ تبادل الكود بـ Tokens
+    async function exchangeCodeForToken(code) {
+      const tokenUrl = `${DOMAIN}/oauth2/token`;
+      const body = new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: CLIENT_ID,
+        code,
+        redirect_uri: REDIRECT_URI
+      });
+
+      try {
+        const res = await fetch(tokenUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+
+        const data = await res.json();
+        const idToken = data.id_token;
+
+        if (!idToken) {
+          document.getElementById("userInfo").innerText = "فشل تسجيل الدخول.";
+          return;
+        }
+
+        // 4️⃣ فك شفرة الـ JWT لاستخراج بيانات المستخدم
+        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        const user = {
+          userId: payload.sub,
+          username: payload['cognito:username'],
+          email: payload.email,
+          phone_number: payload.phone_number
+        };
+
+        // 5️⃣ خزنها في sessionStorage
+        sessionStorage.setItem("cognitoUser", JSON.stringify(user));
+
+        renderUser(user);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("userInfo").innerText = "حدث خطأ أثناء جلب البيانات.";
+      }
+    }
+
+    // 6️⃣ عرض البيانات على الشاشة
+    function renderUser(user) {
+      document.getElementById("userInfo").innerHTML = `
+        <strong>اسم المستخدم:</strong> ${user.username}<br>
+        <strong>رقم الهاتف:</strong> ${user.phone_number || 'غير متوفر'}<br>
+        <strong>البريد الإلكتروني:</strong> ${user.email || 'غير متوفر'}<br>
+        <strong>User ID:</strong> ${user.userId}
+      `;
+    }
+
+    // 7️⃣ تسجيل الخروج
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = `${DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
+    }
+  </script>
+</body>
+</html>
 
