@@ -239,7 +239,6 @@
     <div class="spinner" id="spinner">
         <div class="spin"></div>
     </div>
-            <div id="warn" class="note" hidden></div>
 
     <div class="wrap">
         <div class="card">
@@ -359,13 +358,11 @@
 
             if (!userId) {
                 warn.hidden = false;
-                warn.innerHTML = "من فضلك خزّن <code>sessionStorage.userId</code> مثلًا:<br><code>sessionStorage.setItem('userId','225162155224')</code>";
                 render([]);
                 return;
             }
 
             showSpinner(true);
-            warn.hidden = true; warn.textContent = "";
 
             try {
                 const payload = { userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
@@ -405,5 +402,6 @@
 
 
 </html>
+
 
 
