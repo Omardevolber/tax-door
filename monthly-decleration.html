@@ -79,226 +79,208 @@
     </div>
   </div>
 
-  <script>
-    // ===== الإعدادات =====
-    const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
-    const DEFAULT_DOOR = "old-door";
-    const DEFAULT_FILETYPE = "اقرارات";
+<script>
+/** =========[ CONFIG ]========= */
+const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
+const DEFAULT_DOOR = "old-door";
+const DEFAULT_FILETYPE = "اقرارات";
 
-    // ===== اختصارات DOM =====
-    const $ = id => document.getElementById(id);
-    const spinner = $("spinner"), tbody = $("tbody"), emptyBox = $("empty"),
-          who = $("who"), q = $("q"), noteBox = $("noteBox"),
-          zipBtn = $("zipBtn"), countBox = $("countBox");
+/* لو IDs بتاعتك مختلفة غيّر السلكتورز هنا بس */
+const UI = {
+  refreshBtn:  "#refreshBtn",     // زر "تحديث"
+  zipBtn:      "#zipAllBtn",      // زر "تنزيل الحزمة كاملة"
+  searchBox:   "#searchBox",      // حقل البحث
+  tbody:       "#tableBody",      // جسم الجدول
+  emptyRow:    "#emptyRow",       // سطر "لا توجد ملفات متاحة."
+  noteBox:     "#noteBox",        // صندوق الملاحظة/الخطأ
+  userIdText:  "#userIdText"      // عنصر نصّي يظهر فيه userId (اختياري)
+};
 
-    // ===== حالة الصفحة =====
-    const cache = {
-      itemsAll: [],    // كل العناصر من الفetch
-      itemsView: [],   // العناصر الظاهرة بعد الفلتر
-      userId: ""
-    };
+/** =========[ أدوات عامة ]========= */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-    // ===== أدوات عامة =====
-    function showSpinner(v=true){ spinner.classList.toggle("show", v); }
-    function showNote(text, kind="warn"){
-      noteBox.textContent = text || "";
-      noteBox.style.display = text ? "block" : "none";
-      noteBox.style.color = kind==="ok" ? "#166534" : (kind==="err" ? "#991b1b" : "#8a6114");
-      noteBox.style.background = kind==="ok" ? "#ecfdf5" : (kind==="err" ? "#fef2f2" : "#fff7e6");
-      noteBox.style.borderColor = kind==="ok" ? "#bbf7d0" : (kind==="err" ? "#fecaca" : "#ffe2ad");
-    }
-    function getUserId(){ return sessionStorage.getItem("userId") || ""; }
-    function baseName(key){ return key?.split("/").pop() || ""; }
-    function statusBadge(text){
-      const v = (text||"").trim();
-      let cls = "unk";
-      if (/تم\s*الإرسال/.test(v)) cls = "ok";
-      else if (/غير|خطأ|failed|error/i.test(v)) cls = "err";
-      return `<span class="badge ${cls}">${v || "غير معروف"}</span>`;
-    }
-    function extractPeriodNumber(item){
-      if (item.period && /^\d{6}$/.test(item.period)) return Number(item.period);
-      const name = baseName(item.key)||"", m = name.match(/(\d{6})/);
-      return m ? Number(m[1]) : -Infinity;
-    }
-    function sortItems(items){
-      return (items||[]).slice().sort((a,b)=>{
-        const pa = extractPeriodNumber(a), pb = extractPeriodNumber(b);
-        if (pa !== pb) return pb - pa;
-        const na = (baseName(a.key)||"").toLowerCase();
-        const nb = (baseName(b.key)||"").toLowerCase();
-        if (na < nb) return 1; if (na > nb) return -1; return 0;
-      });
-    }
-    function directDownload(url){
-      const a=document.createElement("a");
-      a.href=url; a.rel="noopener noreferrer";
-      document.body.appendChild(a); a.click(); a.remove();
-    }
+function showNote(msg, kind="warn") {
+  const box = $(UI.noteBox);
+  if (!box) return;
+  box.textContent = msg || "";
+  box.style.display = msg ? "block" : "none";
+  box.style.color = kind==="ok" ? "#166534" : (kind==="err" ? "#991b1b" : "#8a6114");
+}
 
-    // ===== عرض الجدول =====
-    function render(items){
-      const sorted = sortItems(Array.isArray(items)?items:[]);
-      tbody.innerHTML = "";
-      emptyBox.hidden = sorted.length !== 0;
+function baseName(key){ return (key||"").split("/").pop() || ""; }
+function statusBadgeText(s){ return s || "غير معروف"; }
 
-      for (const it of sorted){
-        const periodOrName = it.period ? it.period : baseName(it.key);
-        const url = it.download_url;
-        const st = it.status || "غير معروف";
+function getUserId(){
+  // لو أنت بتحقن الـ userId في الصفحة، سيبه في sessionStorage مرة واحدة:
+  // sessionStorage.setItem('userId','54b8...');
+  return sessionStorage.getItem("userId") || "";
+}
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="name">${periodOrName}</td>
-          <td>${statusBadge(st)}</td>
-          <td>
-            <button class="btn" onclick="directDownload('${url.replace(/'/g,"\\'")}')">تنزيل</button>
-          </td>`;
-        tbody.appendChild(tr);
+/** نفكّ استجابة API Gateway (statusCode/body/isBase64Encoded) */
+function unwrapGatewayResponse(rawText){
+  let data;
+  try { data = JSON.parse(rawText); } catch { return { ok:false, error:"استجابة غير صالحة (ليست JSON)" }; }
+  // لو شكل envelope
+  if (data && typeof data === "object" && "statusCode" in data && "body" in data) {
+    if (data.isBase64Encoded) {
+      try {
+        const decoded = atob(String(data.body));
+        return { ok:true, data: JSON.parse(decoded), statusCode: data.statusCode };
+      } catch(e){
+        return { ok:false, error:"body base64 غير قابل للفك/القراءة" };
       }
-
-      countBox.textContent = sorted.length
-        ? `الظاهرة: ${sorted.length} / الإجمالي: ${cache.itemsAll.length}`
-        : "";
-      zipBtn.disabled = sorted.length === 0;
-      cache.itemsView = sorted;
+    } else {
+      try { return { ok:true, data: JSON.parse(data.body), statusCode: data.statusCode }; }
+      catch(e){ return { ok:false, error:"body ليس JSON" }; }
     }
+  }
+  // أو كانت JSON مباشرة (بدون envelope)
+  return { ok:true, data };
+}
 
-    // ===== فلترة البحث =====
-    function applyFilter(){
-      const t = (q.value || "").trim();
-      if (!t){
-        render(cache.itemsAll);
-        return;
-      }
-      const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "i");
-      const filtered = cache.itemsAll.filter(it=>{
-        const name = baseName(it.key)||"";
-        const p = it.period || "";
-        const s = it.status || "";
-        return rx.test(name) || rx.test(p) || rx.test(s);
-      });
-      render(filtered);
+/** ترتيب العناصر تنازلياً حسب رقم الفترة داخل اسم الملف */
+function sortItems(items){
+  function getP(it){
+    if (it.period && /^\d{6}$/.test(it.period)) return Number(it.period);
+    const m = (baseName(it.key)||"").match(/(\d{6})/);
+    return m ? Number(m[1]) : -Infinity;
+  }
+  return (items||[]).slice().sort((a,b)=>{
+    const pa = getP(a), pb = getP(b);
+    if (pb !== pa) return pb - pa;
+    return (baseName(b.key)||"").localeCompare(baseName(a.key)||"");
+  });
+}
+
+/** =========[ حالة عامة ]========= */
+const state = { all: [], view: [] };
+
+/** =========[ رسم الجدول ]========= */
+function render(items){
+  const tb = $(UI.tbody);
+  const empty = $(UI.emptyRow);
+  const zipBtn = $(UI.zipBtn);
+  if (!tb) return;
+
+  const rows = sortItems(items);
+  tb.innerHTML = "";
+
+  if (!rows.length) {
+    if (empty) empty.style.display = "table-row";
+    if (zipBtn) zipBtn.disabled = true;
+    return;
+  }
+  if (empty) empty.style.display = "none";
+  if (zipBtn) zipBtn.disabled = false;
+
+  for (const it of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="name">${it.period || baseName(it.key)}</td>
+      <td>${statusBadgeText(it.status)}</td>
+      <td><a href="${it.download_url}" rel="noopener" download>تنزيل</a></td>
+    `;
+    tb.appendChild(tr);
+  }
+  state.view = rows;
+}
+
+/** =========[ جلب الملفات ]========= */
+async function fetchFiles(){
+  showNote(""); if ($(UI.zipBtn)) $(UI.zipBtn).disabled = true;
+
+  const userId = getUserId();
+  if ($(UI.userIdText)) $(UI.userIdText).textContent = userId || "";
+  if (!userId){ render([]); showNote("لا يوجد userId في sessionStorage.", "err"); return; }
+
+  try{
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE })
+    });
+    const raw = await res.text();
+    console.log("fetch status:", res.status, "raw first 120:", raw.slice(0,120));
+
+    const uw = unwrapGatewayResponse(raw);
+    if (!uw.ok) throw new Error(uw.error || "فشل قراءة الاستجابة");
+    const data = uw.data;
+
+    state.all = Array.isArray(data.items) ? data.items : [];
+    render(state.all);
+
+    if (data.note) showNote(data.note, "warn");
+  } catch(err){
+    console.error(err);
+    render([]);
+    showNote("خطأ في الجلب: " + (err?.message || err), "err");
+  }
+}
+
+/** =========[ تجميع ZIP (روابط الجدول فقط) ]========= */
+async function makeZip(){
+  const zipBtn = $(UI.zipBtn);
+  if (zipBtn) zipBtn.disabled = true;
+  showNote("");
+
+  try{
+    if (!state.view.length) { showNote("لا توجد عناصر لتجميعها."); return; }
+    const zipName = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
+
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action:"package", items: state.view, zip_name: zipName })
+    });
+    const raw = await res.text();
+    console.log("package status:", res.status, "raw first 120:", raw.slice(0,120));
+
+    const uw = unwrapGatewayResponse(raw);
+    if (!uw.ok) throw new Error(uw.error || "فشل قراءة استجابة الحزمة");
+    const data = uw.data;
+
+    if (data.zip_url){
+      // ننزل باللينك فقط (مش بنرجّع الباينري)
+      const a = document.createElement("a");
+      a.href = data.zip_url; a.rel="noopener"; a.click();
+      showNote("تم إنشاء الحزمة وإتاحة رابط التحميل.", "ok");
+    } else {
+      throw new Error("استجابة غير متوقعة: لا يوجد zip_url.");
     }
+  } catch(err){
+    console.error(err);
+    showNote("تعذّر إنشاء وتنزيل الحزمة: " + (err?.message || err), "err");
+  } finally {
+    if (zipBtn) zipBtn.disabled = false;
+  }
+}
 
-    // ===== جلب البيانات من اللامبدا =====
-    async function fetchData(){
-      cache.userId = getUserId();
-      who.textContent = cache.userId ? cache.userId : "لا يوجد userId في sessionStorage";
+/** =========[ بحث/فلترة ]========= */
+function applyFilter(){
+  const box = $(UI.searchBox);
+  if (!box) return render(state.all);
+  const t = (box.value||"").trim();
+  if (!t) return render(state.all);
+  const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "i");
+  render(state.all.filter(it=>{
+    const name = baseName(it.key)||"";
+    return rx.test(name) || rx.test(it.period||"") || rx.test(it.status||"");
+  }));
+}
 
-      if (!cache.userId){
-        render([]); showNote("أدخل userId في sessionStorage أولًا."); return;
-      }
+/** =========[ ربط الأحداث ]========= */
+(function init(){
+  const r = $(UI.refreshBtn), z = $(UI.zipBtn), s = $(UI.searchBox);
+  if (r) r.addEventListener("click", fetchFiles);
+  if (z) z.addEventListener("click", makeZip);
+  if (s) s.addEventListener("input", applyFilter);
 
-      showSpinner(true); showNote("");
+  // تحميل مبدئي إن وُجد userId
+  if (getUserId()) fetchFiles();
+})();
+</script>
 
-      try{
-        const payload = { userId: cache.userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const raw = await res.text();
-        console.log("fetch status:", res.status, "raw first 120:", raw.slice(0,120));
-        let data;
-        try{ data = JSON.parse(raw); } catch{ throw new Error("استجابة غير صالحة (ليست JSON)."); }
-
-        if (!res.ok){ throw new Error(data?.message || `HTTP ${res.status}`); }
-
-        cache.itemsAll = Array.isArray(data.items) ? data.items : [];
-        render(cache.itemsAll);
-
-        if (data.note){ showNote(data.note, "warn"); }
-      } catch(err){
-        console.error("FETCH error:", err);
-        render([]); showNote("خطأ: " + (err?.message || err), "err");
-      } finally{
-        showSpinner(false);
-      }
-    }
-
-    // ===== إنشاء وتنزيل الحزمة (باستخدام العناصر الظاهرة فقط) =====
-    async function handlePackageZip(){
-      const items = cache.itemsView || [];
-      if (!items.length){ return showNote("لا توجد عناصر لتجميعها."); }
-
-      zipBtn.setAttribute("disabled","true");
-      showSpinner(true); showNote("");
-
-      try{
-        const zipName = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
-        const payload = { action:"package", items, zip_name: zipName };
-
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const ct = res.headers.get("content-type") || "";
-        const raw = await res.text();
-        console.log("package status:", res.status, "ct:", ct, "raw first 120:", raw.slice(0,120));
-
-        let data = null;
-        try{ data = JSON.parse(raw); }catch{
-          // احتمال API GW يرجّع Base64 نصي لJSON
-          if (/^[A-Za-z0-9+/=\r\n]+$/.test(raw) && raw.length % 4 === 0){
-            try{
-              const decoded = atob(raw.replace(/\s+/g,""));
-              data = JSON.parse(decoded);
-              console.warn("parsed base64 JSON from API Gateway");
-            }catch{}
-          }
-        }
-
-        if (!res.ok){
-          const msg = data?.message || data?.error || `HTTP ${res.status}`;
-          throw new Error(`فشل إنشاء الحزمة: ${msg}`);
-        }
-
-        if (data?.zip_url){
-          directDownload(data.zip_url);
-          showNote(`تم إنشاء الحزمة ${(data.size_bytes?`(${(data.size_bytes/1e6).toFixed(1)} MB)`:``)}.`, "ok");
-          return;
-        }
-
-        // fallback نادر: ZIP باينري
-        if (/application\/zip/i.test(ct) || raw.startsWith("PK")){
-          const blob = raw.startsWith("PK")
-            ? new Blob([new TextEncoder().encode(raw)], {type:"application/zip"})
-            : new Blob([raw], {type:"application/zip"});
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url; a.download = zipName;
-          document.body.appendChild(a); a.click(); a.remove();
-          URL.revokeObjectURL(url);
-          showNote("تم تحميل الحزمة مباشرة من الاستجابة.", "ok");
-          return;
-        }
-
-        throw new Error("استجابة غير متوقعة من الخادم (لا يوجد zip_url ولا ZIP).");
-      } catch(err){
-        console.error("ZIP error:", err);
-        showNote(`تعذّر إنشاء وتنزيل الحزمة: ${(err && err.message) || err}`, "err");
-      } finally{
-        zipBtn.removeAttribute("disabled");
-        showSpinner(false);
-      }
-    }
-
-    // ===== تهيئة =====
-    (function init(){
-      $("reloadBtn").addEventListener("click", fetchData);
-      zipBtn.addEventListener("click", handlePackageZip);
-      q.addEventListener("input", applyFilter);
-
-      cache.userId = getUserId();
-      who.textContent = cache.userId ? cache.userId : "لا يوجد userId في sessionStorage";
-      if (cache.userId) fetchData();
-      else render([]);
-    })();
-  </script>
 </body>
 </html>
+
