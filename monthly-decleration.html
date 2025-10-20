@@ -36,15 +36,13 @@
     .unk{background:#fff7ed;color:var(--warn);border-color:#fed7aa}
     .err{background:#fef2f2;color:var(--bad);border-color:#fecaca}
     .note{margin-top:10px;color:#8a6114;background:#fff7e6;border:1px solid #ffe2ad;padding:10px 12px;border-radius:12px}
-    .empty{padding:18px;text-align:center;color:var(--muted);font-weight:600}
+    .empty{padding:18px;text-align:center;color:#muted;font-weight:600}
     .spinner{position:fixed;inset:0;background:rgba(255,255,255,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:999}
     .spinner.show{display:flex}
     .spin{width:58px;height:58px;border-radius:50%;border:5px solid rgba(37,99,235,.15);border-top-color:var(--acc);animation:rot 1s linear infinite}
     @keyframes rot{to{transform:rotate(360deg)}}
     .tools .btn{padding:8px 12px}
   </style>
-  <!-- JSZip للضغط داخل المتصفح -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
 <body>
   <button class="back-btn" onclick="window.location.href='index.html'"></button>
@@ -61,7 +59,7 @@
         </div>
         <div class="right-tools">
           <input id="searchBox" class="input" placeholder="بحث: اسم الإقرار أو الحالة..." />
-          <button class="btn" id="zipBtn" title="تنزيل الحزمة كاملة" disabled>تنزيل الحزمة كاملة</button>
+          <button class="btn" id="bulkBtn" title="تنزيل الظاهر دفعة واحدة" disabled>تنزيل الظاهر دفعة واحدة</button>
           <button class="btn primary" id="reloadBtn" title="تحديث البيانات">تحديث</button>
         </div>
       </div>
@@ -85,12 +83,12 @@
   </div>
 
   <script>
-    // ===== إعدادات عامة =====
+    // ===== الإعدادات =====
     const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
     const DEFAULT_DOOR = "old-door";
     const DEFAULT_FILETYPE = "اقرارات";
 
-    // ===== مراجع DOM =====
+    // ===== DOM =====
     const $ = id => document.getElementById(id);
     const spinner = $("spinner");
     const tbody = $("tbody");
@@ -98,13 +96,13 @@
     const warn = $("warn");
     const who = $("who");
     const searchBox = $("searchBox");
-    const zipBtn = $("zipBtn");
+    const bulkBtn = $("bulkBtn");
 
     // ===== حالة الصفحة =====
     let allItems = [];      // نتيجة أول POST فقط
-    let lastRendered = [];  // العناصر الظاهرة بعد الفلترة (للZIP)
+    let lastRendered = [];  // العناصر الظاهرة بعد الفلترة
 
-    // ===== أدوات مساعدة =====
+    // ===== Helpers =====
     const showSpinner = (v=true)=>spinner.classList.toggle("show", v);
     const getUserId = ()=>sessionStorage.getItem("userId")||"";
     const baseName = key => key?.split("/").pop() || "";
@@ -149,7 +147,7 @@
       lastRendered = sorted;
       tbody.innerHTML="";
       emptyBox.hidden = sorted.length!==0;
-      zipBtn.disabled = sorted.length===0;
+      bulkBtn.disabled = sorted.length===0;
 
       for(const it of sorted){
         const periodOrName = it.period ? it.period : baseName(it.key);
@@ -164,7 +162,7 @@
           </td>`;
         tbody.appendChild(tr);
       }
-      // ربط أزرار التنزيل الفردي (استخدام الرابط كما هو، بدون fetch منا)
+      // ربط أزرار التنزيل الفردي (من الرابط مباشرة—بدون fetch منا)
       tbody.querySelectorAll(".dl-btn").forEach(b=>{
         b.addEventListener("click",()=>directDownload(b.dataset.url));
       });
@@ -206,60 +204,25 @@
       }finally{ showSpinner(false); }
     }
 
-    // ZIP داخل المتصفح من "نفس روابط الجدول" فقط – لا أي استعلام بيانات جديد
-    async function downloadVisibleAsZip(){
+    // تنزيل كل العناصر الظاهرة "من الجدول فقط" بدون أي fetch إضافي
+    async function downloadAllVisibleIndividually(){
       if(!lastRendered.length) return;
-
       showSpinner(true);
-      warn.hidden=true;
-
-      const zip = new JSZip();
-      let ok=0, fail=0;
-
-      const q=(searchBox.value||"").trim();
-      const stamp=new Date().toISOString().replace(/[:.]/g,"-");
-      const zipName = q ? `declarations_filtered_${safeName(q)}_${stamp}.zip`
-                        : `declarations_${stamp}.zip`;
-
-      // نجلب البايتس من نفس روابط الملفات (مش من الـ API/DB)
-      for(const it of lastRendered){
-        const url = it.download_url;
-        const periodOrName = it.period ? String(it.period) : baseName(it.key);
-        const filename = safeName(periodOrName || baseName(url) || `file_${ok+fail+1}`);
-        try{
-          const resp = await fetch(url);            // لازم CORS يسمح
-          if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          const blob = await resp.blob();
-          const buf = await blob.arrayBuffer();
-          zip.file(filename, buf);
-          ok++;
-        }catch(e){ fail++; }
+      // ابني قائمة الروابط الظاهرة من DOM لضمان الالتزام بـ "من الجدول فقط"
+      const urls = Array.from(tbody.querySelectorAll(".dl-btn")).map(b=>b.dataset.url);
+      for(const u of urls){
+        directDownload(u);
+        // مهلة بسيطة حتى يبدأ المتصفح التنزيل، وتفادي حظر النوافذ
+        await new Promise(r=>setTimeout(r, 250));
       }
-
-      try{
-        const zipBlob = await zip.generateAsync({type:"blob"});
-        const url = URL.createObjectURL(zipBlob);
-        const a=document.createElement("a");
-        a.href=url; a.download=zipName;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-
-        if(fail>0){
-          warn.hidden=false;
-          warn.textContent=`تم تضمين ${ok} ملفًا، وفشل ${fail}. (غالبًا CORS في روابط الملفات)`;
-        }
-      }catch(_){
-        warn.hidden=false; warn.textContent="تعذّر إنشاء ملف ZIP.";
-      }finally{
-        showSpinner(false);
-      }
+      showSpinner(false);
     }
 
     // ===== init =====
     (function(){
       $("reloadBtn").addEventListener("click", fetchData);
       searchBox.addEventListener("input", ()=>render(applyFilter(allItems, searchBox.value)));
-      zipBtn.addEventListener("click", downloadVisibleAsZip);
+      bulkBtn.addEventListener("click", downloadAllVisibleIndividually);
 
       if(getUserId()) fetchData();
       else who.textContent="لا يوجد userId في sessionStorage";
