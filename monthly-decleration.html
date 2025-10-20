@@ -1,280 +1,404 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>إقرارات المستخدم</title>
-  <style>
-    :root{
-      --bg:#f5f7fb;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --primary:#2563eb;
-      --primary-600:#1d4ed8;
-      --ring:#e5e7eb;
-      --warn:#b45309;
-    }
-    html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--text);
-      font:16px/1.5 "Cairo","Tajawal",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    }
-    .page{
-      max-width:900px; margin:40px auto; padding:0 12px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--ring);
-      border-radius:16px;
-      box-shadow:0 4px 12px rgba(0,0,0,.04);
-      overflow:hidden;
-    }
-    .card-h{
-      padding:18px 18px 6px;
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .card-h h2{
-      margin:0; font-size:22px; font-weight:700;
-    }
-    .toolbar{
-      padding:12px 18px 18px;
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
-    .btn{
-      border:1px solid var(--ring); background:#fff; color:var(--text);
-      padding:8px 12px; border-radius:10px; cursor:pointer;
-      font-weight:600;
-    }
-    .btn.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
-    .btn.primary:hover{ background:var(--primary-600); }
-    .btn:disabled{ opacity:.5; cursor:not-allowed; }
-    .input{
-      min-width:260px; flex:1 1 280px;
-      border:1px solid var(--ring); background:#fff; color:var(--text);
-      padding:8px 12px; border-radius:10px; outline:none;
-    }
-    .subtle{
-      color:var(--muted); font-size:13px; user-select:text;
-    }
-    .notice{
-      background:#fff7ed; color:#92400e; border:1px solid #fed7aa;
-      margin:0 18px 12px; border-radius:10px; padding:10px 12px; display:none;
-    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>إقرارات الفيمة المضافه</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #0c223a;
+            --muted: #5d6b7a;
+            --line: #e6edf5;
+            --acc: #2563eb;
+            --acc-2: #1d4ed8;
+            --ok: #16a34a;
+            --warn: #b45309;
+            --bad: #dc2626;
+            --br: 16px
+        }
 
-    table{ width:100%; border-collapse:separate; border-spacing:0; }
-    thead th{
-      text-align:right; font-weight:700; font-size:14px; color:var(--muted);
-      padding:12px 16px; background:#f9fafb; border-bottom:1px solid var(--ring);
-    }
-    tbody td{ padding:14px 16px; border-bottom:1px solid var(--ring); }
-    tbody tr:last-child td{ border-bottom:none; }
-    .cell-name{ font-weight:700; }
-    .cell-status{ color:var(--muted); }
-    .table-wrap{ overflow:auto; }
-    .empty{
-      text-align:center; color:var(--muted); padding:26px 12px;
-    }
-  </style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            color: #fff;
+            background-color: #7eb4ef;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #789ab9;
+        }
+
+        /* السهم */
+        .back-btn::before {
+            content: "←";
+            font-size: 24px;
+            color: #ffffff;
+
+        }
+        .wrap {
+            max-width: 1100px;
+            margin: 80px auto;
+            padding: 0 20px
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--br);
+            padding: 18px 18px 8px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, .06);
+            border: 1px solid #eef2f7
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            font-weight: 700
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 10px
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid #d6e1f0;
+            background: #fff;
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .15s ease;
+            font-weight: 600
+        }
+
+        .btn.primary {
+            background: var(--acc);
+            border-color: var(--acc-2);
+            color: #fff
+        }
+
+        .btn.primary:hover {
+            background: var(--acc-2)
+        }
+
+        .table-wrap {
+            margin-top: 10px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0
+        }
+
+        thead th {
+            background: #f2f6fc;
+            color: #1f2a37;
+            font-weight: 700;
+            text-align: right;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle
+        }
+
+        tbody tr:hover {
+            background: #fafcff
+        }
+
+        .name {
+            font-weight: 700
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid
+        }
+
+        .ok {
+            background: #ecfdf5;
+            color: var(--ok);
+            border-color: #bbf7d0
+        }
+
+        .unk {
+            background: #fff7ed;
+            color: var(--warn);
+            border-color: #fed7aa
+        }
+
+        .err {
+            background: #fef2f2;
+            color: var(--bad);
+            border-color: #fecaca
+        }
+
+        .note {
+            margin-top: 10px;
+            color: #8a6114;
+            background: #fff7e6;
+            border: 1px solid #ffe2ad;
+            padding: 10px 12px;
+            border-radius: 12px
+        }
+
+        .empty {
+            padding: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        .spinner {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, .65);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999
+        }
+
+        .spinner.show {
+            display: flex
+        }
+
+        .spin {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 5px solid rgba(37, 99, 235, .15);
+            border-top-color: var(--acc);
+            animation: rot 1s linear infinite
+        }
+
+        @keyframes rot {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .tools .btn {
+            padding: 8px 12px
+        }
+    </style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="card" id="card">
+    <button class="back-btn" onclick="window.location.href='index.html'"></button>
 
-      <div class="card-h">
-        <h2>إقرارات المستخدم</h2>
-        <button id="refreshBtn" class="btn">تحديث</button>
-      </div>
-
-      <div class="toolbar">
-        <button id="zipAllBtn" class="btn">تنزيل الحزمة كاملة</button>
-        <input id="searchBox" class="input" type="text" placeholder="بحث: اسم الإقرار أو الحالة..." />
-        <span id="userHint" class="subtle"></span>
-      </div>
-
-      <div id="notice" class="notice">تعذّر إنشاء وتنزيل الحزمة.</div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:40%">اسم الإقرار</th>
-              <th style="width:40%">حالة الإقرار</th>
-              <th style="width:20%">تنزيل</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" data-role="items">
-            <tr id="emptyRow"><td colspan="3" class="empty">لا توجد ملفات متاحة.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
+    <div class="spinner" id="spinner">
+        <div class="spin"></div>
     </div>
-  </div>
 
-  <!-- يمكنك وضع الـ userId هنا أو بالـ sessionStorage (الأفضل تخزينه عند تسجيل الدخول) -->
-  <div id="ctx" data-userid=""></div>
+    <div class="wrap">
+        <div class="card">
+            <h1>إقرارات المستخدم</h1>
+            <div class="toolbar">
+                <div class="muted" id="who"></div>
+                <button class="btn primary" id="reloadBtn" title="تحديث البيانات">تحديث</button>
+            </div>
 
-  <script>
-  // ===================== الإعدادات =====================
-  const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
-  const DEFAULT_DOOR = "old-door";
-  const DEFAULT_FILETYPE = "اقرارات";
 
-  // ============== أدوات مساعدة خفيفة ==============
-  const $  = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
-  function baseName(k){ return (k||"").split("/").pop() || ""; }
-  function statusText(s){ return s || "غير معروف"; }
-  function getUserId(){
-    return sessionStorage.getItem("userId")
-        || $("#ctx")?.getAttribute("data-userid")
-        || "";
-  }
-  function showNotice(txt){
-    const n = $("#notice");
-    if (!n) return;
-    n.textContent = txt || "تعذّر إنشاء وتنزيل الحزمة.";
-    n.style.display = "block";
-    setTimeout(()=> n.style.display = "none", 4000);
-  }
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:45%">اسم الإقرار</th>
+                            <th style="width:25%">حالة الإقرار</th>
+                            <th style="width:30%">تنزيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <div class="empty" id="empty" hidden>لا توجد ملفات متاحة.</div>
+            </div>
+        </div>
+    </div>
 
-  // يفك أي envelope من API Gateway (statusCode/body/isBase64Encoded) أو JSON مباشر
-  function unwrap(rawText){
-    let j; try{ j = JSON.parse(rawText); }catch{ return {ok:false,error:"JSON غير صالح"}; }
-    if (j && typeof j==="object" && "statusCode" in j && "body" in j){
-      if (j.isBase64Encoded){
-        try{ return { ok:true, data: JSON.parse(atob(String(j.body))), statusCode:j.statusCode }; }
-        catch{ return { ok:false, error:"body base64 غير قابل للفك" }; }
-      } else {
-        try{ return { ok:true, data: JSON.parse(j.body), statusCode:j.statusCode }; }
-        catch{ return { ok:false, error:"body ليس JSON" }; }
-      }
-    }
-    return { ok:true, data:j };
-  }
+    <script>
+        const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
+        const DEFAULT_DOOR = "old-door";
+        const DEFAULT_FILETYPE = "اقرارات";
 
-  // يلقط العناصر أيا كان اسم المفتاح الراجع
-  function extractItems(data){
-    if (!data || typeof data!=="object") return [];
-    const candidates = [
-      data.items, data.files, data.list, data.results, data.data?.items, data.data?.files
-    ].filter(Array.isArray);
-    return candidates[0] || [];
-  }
+        const $ = id => document.getElementById(id);
+        const spinner = $("spinner");
+        const tbody = $("tbody");
+        const emptyBox = $("empty");
+        const warn = $("warn");
+        const who = $("who");
 
-  // ============== رسم الجدول ==============
-  function toggleEmpty(show){
-    const r = $("#emptyRow");
-    if (r) r.style.display = show ? "table-row" : "none";
-  }
+        function showSpinner(v = true) { spinner.classList.toggle("show", v); }
+        function getUserId() { return sessionStorage.getItem("userId") || ""; }
+        function baseName(key) { return key?.split("/").pop() || ""; }
 
-  function render(items){
-    const tb = $("#tableBody");
-    const zipBtn = $("#zipAllBtn");
-    if (!tb) return;
+        // توليد شارة الحالة
+        function statusBadge(text) {
+            const v = (text || "").trim();
+            let cls = "unk";
+            if (/تم\s*الإرسال/.test(v)) cls = "ok";
+            else if (/غير|خطأ|failed|error/i.test(v)) cls = "err";
+            return `<span class="badge ${cls}">${v || "غير معروف"}</span>`;
+        }
 
-    tb.innerHTML = "";
-    if (!items.length){
-      toggleEmpty(true);
-      if (zipBtn) zipBtn.disabled = true;
-      return;
-    }
-    toggleEmpty(false);
-    if (zipBtn) zipBtn.disabled = false;
+        // استخراج قيمة ترتيب YYYYMM (Number) من period أو اسم الملف
+        function extractPeriodNumber(item) {
+            // أولوية: الحقل period لو موجود
+            if (item.period && /^\d{6}$/.test(item.period)) {
+                return Number(item.period); // YYYYMM
+            }
+            // جرّب من اسم الملف
+            const name = baseName(item.key) || "";
+            const m = name.match(/(\d{6})/);
+            if (m) return Number(m[1]);
+            // fallback: استخدام اسم الملف ترتيبًا نزوليًا
+            // نحول الاسم لـ قيمة قابلة للمقارنة تنازليًا
+            return -Infinity; // يخلي العناصر غير المعروفة تروح آخر القائمة
+        }
 
-    for (const it of items){
-      const name = it.period || baseName(it.key) || baseName(it.name) || "بدون اسم";
-      const url  = it.download_url || it.url || it.link;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="cell-name">${name}</td>
-        <td class="cell-status">${statusText(it.status)}</td>
-        <td>${url ? `<a href="${url}" download rel="noopener">تنزيل</a>` : "-"}</td>
-      `;
-      tb.appendChild(tr);
-    }
-  }
+        // ترتيب العناصر: الأحدث → الأقدم
+        function sortItems(items) {
+            return items.slice().sort((a, b) => {
+                const pa = extractPeriodNumber(a);
+                const pb = extractPeriodNumber(b);
+                if (pa !== pb) return pb - pa; // نزولي
+                // tie-breaker: نزولي بالاسم
+                const na = (baseName(a.key) || "").toLowerCase();
+                const nb = (baseName(b.key) || "").toLowerCase();
+                if (na < nb) return 1;
+                if (na > nb) return -1;
+                return 0;
+            });
+        }
 
-  // ============== الحالة العامة ==============
-  const state = { all: [], view: [] };
+        // عرض الجدول
+        function render(items) {
+            const sorted = sortItems(Array.isArray(items) ? items : []);
+            tbody.innerHTML = "";
+            emptyBox.hidden = sorted.length !== 0;
 
-  // ============== الجلب ==============
-  async function fetchFiles(){
-    const userId = getUserId();
-    $("#userHint").textContent = userId ? `المستخدم: ${userId}` : "";
-    if (!userId){ render([]); return; }
+            for (const it of sorted) {
+                const periodOrName = it.period ? it.period : baseName(it.key);
+                const url = it.download_url;          // نفس الرابط القادم من أول POST
+                const st = it.status || "غير معروف";
 
-    try{
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE })
-      });
-      const raw = await res.text();
-      console.log("fetch status:", res.status, "raw first 120:", raw.slice(0,120));
-      const uw = unwrap(raw);
-      if (!uw.ok) throw new Error(uw.error);
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+          <td class="name">${periodOrName}</td>
+          <td>${statusBadge(st)}</td>
+          <td class="tools">
+            <button class="btn" onclick="directDownload('${url.replace(/'/g, "\\'")}')">تنزيل</button>
+          </td>
+        `;
+                tbody.appendChild(tr);
+            }
+        }
 
-      const data  = uw.data || {};
-      const items = extractItems(data);
-      console.log("items length:", items.length, {keys:Object.keys(data)});
-      state.all  = items;
-      state.view = items;
-      render(items);
-    } catch(e){
-      console.error("Fetch error:", e);
-      render([]);
-    }
-  }
+        // تنزيل مباشر لنفس الـ URL بدون أي fetch (يمنع مشاكل CORS)
+        window.directDownload = (url) => {
+            const a = document.createElement("a");
+            a.href = url;
+            a.rel = "noopener noreferrer";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        };
 
-  // ============== إنشاء الحزمة (يرجع لينك فقط) ==============
-  async function makeZip(){
-    if (!state.view.length) return;
-    const zipName = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
-    try{
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ action:"package", items: state.view, zip_name: zipName })
-      });
-      const raw = await res.text();
-      console.log("package status:", res.status, "raw first 120:", raw.slice(0,120));
-      const uw = unwrap(raw);
-      if (!uw.ok) throw new Error(uw.error);
-      const data = uw.data || {};
-      const url  = data.zip_url || data.url || data.presigned_url;
-      if (url){
-        const a = document.createElement("a"); a.href = url; a.rel="noopener"; a.click();
-      }else{
-        console.warn("لا يوجد zip_url في الاستجابة:", data);
-        showNotice("تعذّر إنشاء وتنزيل الحزمة.");
-      }
-    }catch(e){
-      console.error("Package error:", e);
-      showNotice("تعذّر إنشاء وتنزيل الحزمة.");
-    }
-  }
+        async function fetchData() {
+            const userId = getUserId();
 
-  // ============== البحث ==============
-  function applyFilter(){
-    const box = $("#searchBox");
-    const t = (box?.value || "").trim();
-    if (!t){ render(state.all); return; }
-    const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "i");
-    render(state.all.filter(it=>{
-      const nm = it.period || baseName(it.key) || baseName(it.name) || "";
-      return rx.test(nm) || rx.test(it.status||"");
-    }));
-  }
+            if (!userId) {
+                warn.hidden = false;
+                render([]);
+                return;
+            }
 
-  // ============== الربط والتشغيل ==============
-  (function init(){
-    $("#refreshBtn")?.addEventListener("click", fetchFiles);
-    $("#zipAllBtn")?.addEventListener("click", makeZip);
-    $("#searchBox")?.addEventListener("input", applyFilter);
-    fetchFiles(); // تحميل أولي
-  })();
-  </script>
+            showSpinner(true);
+
+            try {
+                const payload = { userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const raw = await res.json();
+                const data = typeof raw?.body === "string" ? JSON.parse(raw.body) : raw;
+
+                if (!res.ok) throw new Error(data?.message || res.statusText);
+
+                render(data.items || []);
+                if (data.note) {
+                    warn.hidden = false;
+                    warn.textContent = data.note;
+                }
+            } catch (err) {
+                warn.hidden = false;
+                warn.textContent = "خطأ: " + (err?.message || err);
+                render([]);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // init
+        (function () {
+            $("reloadBtn").addEventListener("click", fetchData);
+            if (getUserId()) fetchData();
+            else who.textContent = "لا يوجد userId في sessionStorage";
+        })();
+    </script>
 </body>
+
+
 </html>
