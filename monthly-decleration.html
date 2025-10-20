@@ -1,270 +1,55 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>إقرارات الفيمة المضافه</title>
+  <title>إقرارات القيمة المضافة</title>
   <style>
-    :root {
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --text: #0c223a;
-      --muted: #5d6b7a;
-      --line: #e6edf5;
-      --acc: #2563eb;
-      --acc-2: #1d4ed8;
-      --ok: #16a34a;
-      --warn: #b45309;
-      --bad: #dc2626;
-      --br: 16px
+    :root{
+      --bg:#f6f8fb;--card:#fff;--text:#0c223a;--muted:#5d6b7a;--line:#e6edf5;
+      --acc:#2563eb;--acc-2:#1d4ed8;--ok:#16a34a;--warn:#b45309;--bad:#dc2626;--br:16px
     }
-
-    * {
-      box-sizing: border-box
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial
-    }
-
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 50px;
-      height: 50px;
-      color: #fff;
-      background-color: #7eb4ef;
-      border: none;
-      border-radius: 50%;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s ease;
-    }
-
-    .back-btn:hover {
-      background-color: #789ab9;
-    }
-
-    .back-btn::before {
-      content: "←";
-      font-size: 24px;
-      color: #ffffff;
-    }
-
-    .wrap {
-      max-width: 1100px;
-      margin: 80px auto;
-      padding: 0 20px
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: var(--br);
-      padding: 18px 18px 8px;
-      box-shadow: 0 10px 30px rgba(2, 6, 23, .06);
-      border: 1px solid #eef2f7
-    }
-
-    h1 {
-      margin: 0 0 6px;
-      font-size: 24px;
-      font-weight: 700
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 10px
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-
-    .left-tools,
-    .right-tools {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn {
-      appearance: none;
-      border: 1px solid #d6e1f0;
-      background: #fff;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all .15s ease;
-      font-weight: 600
-    }
-
-    .btn[disabled] {
-      cursor: not-allowed;
-      opacity: .6;
-    }
-
-    .btn.primary {
-      background: var(--acc);
-      border-color: var(--acc-2);
-      color: #fff
-    }
-
-    .btn.primary:hover {
-      background: var(--acc-2)
-    }
-
-    .input {
-      border: 1px solid #d6e1f0;
-      background: #fff;
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      min-width: 260px;
-      outline: none;
-    }
-
-    .table-wrap {
-      margin-top: 10px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0
-    }
-
-    thead th {
-      background: #f2f6fc;
-      color: #1f2a37;
-      font-weight: 700;
-      text-align: right;
-      border-bottom: 1px solid var(--line);
-      font-size: 14px
-    }
-
-    th,
-    td {
-      padding: 14px 12px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: middle
-    }
-
-    tbody tr:hover {
-      background: #fafcff
-    }
-
-    .name {
-      font-weight: 700
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      border: 1px solid
-    }
-
-    .ok {
-      background: #ecfdf5;
-      color: var(--ok);
-      border-color: #bbf7d0
-    }
-
-    .unk {
-      background: #fff7ed;
-      color: var(--warn);
-      border-color: #fed7aa
-    }
-
-    .err {
-      background: #fef2f2;
-      color: var(--bad);
-      border-color: #fecaca
-    }
-
-    .note {
-      margin-top: 10px;
-      color: #8a6114;
-      background: #fff7e6;
-      border: 1px solid #ffe2ad;
-      padding: 10px 12px;
-      border-radius: 12px
-    }
-
-    .empty {
-      padding: 18px;
-      text-align: center;
-      color: var(--muted);
-      font-weight: 600
-    }
-
-    .spinner {
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, .65);
-      backdrop-filter: blur(2px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999
-    }
-
-    .spinner.show {
-      display: flex
-    }
-
-    .spin {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      border: 5px solid rgba(37, 99, 235, .15);
-      border-top-color: var(--acc);
-      animation: rot 1s linear infinite
-    }
-
-    @keyframes rot {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    .tools .btn {
-      padding: 8px 12px
-    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+    .back-btn{position:absolute;top:20px;left:20px;width:50px;height:50px;color:#fff;background:#7eb4ef;border:0;border-radius:50%;box-shadow:0 3px 6px rgba(0,0,0,.2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.3s}
+    .back-btn:hover{background:#789ab9}
+    .back-btn::before{content:"←";font-size:24px;color:#fff}
+    .wrap{max-width:1100px;margin:80px auto;padding:0 20px}
+    .card{background:var(--card);border-radius:var(--br);padding:18px 18px 8px;box-shadow:0 10px 30px rgba(2,6,23,.06);border:1px solid #eef2f7}
+    h1{margin:0 0 6px;font-size:24px;font-weight:700}
+    .muted{color:var(--muted);font-size:13px;margin-bottom:10px}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap}
+    .left-tools,.right-tools{display:flex;align-items:center;gap:10px}
+    .btn{appearance:none;border:1px solid #d6e1f0;background:#fff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;transition:.15s;font-weight:600}
+    .btn[disabled]{cursor:not-allowed;opacity:.6}
+    .btn.primary{background:var(--acc);border-color:var(--acc-2);color:#fff}
+    .btn.primary:hover{background:var(--acc-2)}
+    .input{border:1px solid #d6e1f0;background:#fff;color:var(--text);padding:10px 12px;border-radius:12px;min-width:260px;outline:none}
+    .table-wrap{margin-top:10px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{background:#f2f6fc;color:#1f2a37;font-weight:700;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
+    th,td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+    tbody tr:hover{background:#fafcff}
+    .name{font-weight:700}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid}
+    .ok{background:#ecfdf5;color:var(--ok);border-color:#bbf7d0}
+    .unk{background:#fff7ed;color:var(--warn);border-color:#fed7aa}
+    .err{background:#fef2f2;color:var(--bad);border-color:#fecaca}
+    .note{margin-top:10px;color:#8a6114;background:#fff7e6;border:1px solid #ffe2ad;padding:10px 12px;border-radius:12px}
+    .empty{padding:18px;text-align:center;color:var(--muted);font-weight:600}
+    .spinner{position:fixed;inset:0;background:rgba(255,255,255,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:999}
+    .spinner.show{display:flex}
+    .spin{width:58px;height:58px;border-radius:50%;border:5px solid rgba(37,99,235,.15);border-top-color:var(--acc);animation:rot 1s linear infinite}
+    @keyframes rot{to{transform:rotate(360deg)}}
+    .tools .btn{padding:8px 12px}
   </style>
-
   <!-- JSZip للضغط داخل المتصفح -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
-
 <body>
   <button class="back-btn" onclick="window.location.href='index.html'"></button>
 
-  <div class="spinner" id="spinner">
-    <div class="spin"></div>
-  </div>
+  <div class="spinner" id="spinner"><div class="spin"></div></div>
 
   <div class="wrap">
     <div class="card">
@@ -274,7 +59,6 @@
         <div class="left-tools">
           <div class="muted" id="who"></div>
         </div>
-
         <div class="right-tools">
           <input id="searchBox" class="input" placeholder="بحث: اسم الإقرار أو الحالة..." />
           <button class="btn" id="zipBtn" title="تنزيل الحزمة كاملة" disabled>تنزيل الحزمة كاملة</button>
@@ -301,10 +85,12 @@
   </div>
 
   <script>
+    // ===== إعدادات عامة =====
     const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
     const DEFAULT_DOOR = "old-door";
     const DEFAULT_FILETYPE = "اقرارات";
 
+    // ===== مراجع DOM =====
     const $ = id => document.getElementById(id);
     const spinner = $("spinner");
     const tbody = $("tbody");
@@ -314,202 +100,170 @@
     const searchBox = $("searchBox");
     const zipBtn = $("zipBtn");
 
-    let allItems = [];      // كل العناصر القادمة من الـ API
-    let lastRendered = [];  // آخر عناصر ظاهرة بعد الفلترة (للضغط)
+    // ===== حالة الصفحة =====
+    let allItems = [];      // نتيجة أول POST فقط
+    let lastRendered = [];  // العناصر الظاهرة بعد الفلترة (للZIP)
 
-    function showSpinner(v = true) { spinner.classList.toggle("show", v); }
-    function getUserId() { return sessionStorage.getItem("userId") || ""; }
-    function baseName(key) { return key?.split("/").pop() || ""; }
-    function safeName(s) { return (s || "").toString().replace(/[\\/:*?"<>|]+/g, "_"); }
+    // ===== أدوات مساعدة =====
+    const showSpinner = (v=true)=>spinner.classList.toggle("show", v);
+    const getUserId = ()=>sessionStorage.getItem("userId")||"";
+    const baseName = key => key?.split("/").pop() || "";
+    const safeName = s => (s||"").toString().replace(/[\\/:*?"<>|]+/g,"_");
 
-    function statusBadge(text) {
-      const v = (text || "").trim();
-      let cls = "unk";
-      if (/تم\s*الإرسال/.test(v)) cls = "ok";
-      else if (/غير|خطأ|failed|error/i.test(v)) cls = "err";
-      return `<span class="badge ${cls}">${v || "غير معروف"}</span>`;
+    function statusBadge(text){
+      const v=(text||"").trim();
+      let cls="unk";
+      if(/تم\s*الإرسال/.test(v)) cls="ok";
+      else if(/غير|خطأ|failed|error/i.test(v)) cls="err";
+      return `<span class="badge ${cls}">${v||"غير معروف"}</span>`;
     }
 
-    function extractPeriodNumber(item) {
-      if (item.period && /^\d{6}$/.test(item.period)) return Number(item.period);
-      const name = baseName(item.key) || "";
-      const m = name.match(/(\d{6})/);
-      if (m) return Number(m[1]);
-      return -Infinity;
+    function extractPeriodNumber(item){
+      if(item.period && /^\d{6}$/.test(item.period)) return Number(item.period);
+      const m=(baseName(item.key)||"").match(/(\d{6})/);
+      return m? Number(m[1]) : -Infinity;
     }
 
-    function sortItems(items) {
-      return items.slice().sort((a, b) => {
-        const pa = extractPeriodNumber(a);
-        const pb = extractPeriodNumber(b);
-        if (pa !== pb) return pb - pa;
-        const na = (baseName(a.key) || "").toLowerCase();
-        const nb = (baseName(b.key) || "").toLowerCase();
-        if (na < nb) return 1;
-        if (na > nb) return -1;
-        return 0;
+    function sortItems(items){
+      return items.slice().sort((a,b)=>{
+        const pa=extractPeriodNumber(a), pb=extractPeriodNumber(b);
+        if(pa!==pb) return pb-pa;
+        const na=(baseName(a.key)||"").toLowerCase();
+        const nb=(baseName(b.key)||"").toLowerCase();
+        return na<nb?1: na>nb?-1: 0;
       });
     }
 
-    function applyFilter(items, query) {
-      const q = (query || "").trim().toLowerCase();
-      if (!q) return items;
-      return items.filter(it => {
+    function applyFilter(items, q){
+      const s=(q||"").trim().toLowerCase();
+      if(!s) return items;
+      return items.filter(it=>{
         const name = it.period ? String(it.period) : baseName(it.key);
-        const status = (it.status || "").toString();
-        return (name || "").toLowerCase().includes(q) || status.toLowerCase().includes(q);
+        const st = (it.status||"").toString();
+        return (name||"").toLowerCase().includes(s) || st.toLowerCase().includes(s);
       });
     }
 
-    function render(items) {
-      const sorted = sortItems(Array.isArray(items) ? items : []);
-      lastRendered = sorted; // خزّن العناصر الظاهرة لاستخدامها في الضغط
-      tbody.innerHTML = "";
-      emptyBox.hidden = sorted.length !== 0;
-      zipBtn.disabled = sorted.length === 0;
+    function render(items){
+      const sorted = sortItems(Array.isArray(items)?items:[]);
+      lastRendered = sorted;
+      tbody.innerHTML="";
+      emptyBox.hidden = sorted.length!==0;
+      zipBtn.disabled = sorted.length===0;
 
-      for (const it of sorted) {
+      for(const it of sorted){
         const periodOrName = it.period ? it.period : baseName(it.key);
         const url = it.download_url;
         const st = it.status || "غير معروف";
-
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="name">${periodOrName}</td>
           <td>${statusBadge(st)}</td>
           <td class="tools">
-            <button class="btn" onclick="directDownload('${url.replace(/'/g, "\\'")}')">تنزيل</button>
-          </td>
-        `;
+            <button class="btn dl-btn" data-url="${url.replace(/"/g,'&quot;')}">تنزيل</button>
+          </td>`;
         tbody.appendChild(tr);
       }
+      // ربط أزرار التنزيل الفردي (استخدام الرابط كما هو، بدون fetch منا)
+      tbody.querySelectorAll(".dl-btn").forEach(b=>{
+        b.addEventListener("click",()=>directDownload(b.dataset.url));
+      });
     }
 
-    // تنزيل مباشر لنفس الـ URL (ملف واحد)
-    window.directDownload = (url) => {
-      const a = document.createElement("a");
-      a.href = url;
-      a.rel = "noopener noreferrer";
-      a.download = ""; // يسمح لبعض المتصفحات بتنزيل مباشر
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
+    // تنزيل فردي بدون أي جلب منا (المتصفح يتولى التنزيل)
+    function directDownload(url){
+      const a=document.createElement("a");
+      a.href=url; a.rel="noopener noreferrer"; a.download="";
+      document.body.appendChild(a); a.click(); a.remove();
+    }
 
-    async function fetchData() {
-      const userId = getUserId();
-      if (!userId) {
-        who.textContent = "لا يوجد userId في sessionStorage";
-        warn.hidden = false;
-        warn.textContent = "برجاء تسجيل الدخول أولًا.";
-        render([]);
-        return;
+    // أول وآخر مرة نكلم الـ API هي هنا (أو عند الضغط على تحديث)
+    async function fetchData(){
+      const userId=getUserId();
+      if(!userId){
+        who.textContent="لا يوجد userId في sessionStorage";
+        warn.hidden=false; warn.textContent="برجاء تسجيل الدخول أولًا.";
+        render([]); return;
       }
-
       showSpinner(true);
-      who.textContent = `المستخدم: ${userId}`;
-
-      try {
-        const payload = { userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+      who.textContent=`المستخدم: ${userId}`;
+      try{
+        const payload={userId, door:DEFAULT_DOOR, fileType:DEFAULT_FILETYPE};
+        const res=await fetch(API_URL,{
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(payload)
         });
+        const raw=await res.json();
+        const data=typeof raw?.body==="string"? JSON.parse(raw.body):raw;
+        if(!res.ok) throw new Error(data?.message||res.statusText);
 
-        const raw = await res.json();
-        const data = typeof raw?.body === "string" ? JSON.parse(raw.body) : raw;
-
-        if (!res.ok) throw new Error(data?.message || res.statusText);
-
-        allItems = Array.isArray(data.items) ? data.items : [];
-        if (data.note) {
-          warn.hidden = false;
-          warn.textContent = data.note;
-        } else {
-          warn.hidden = true;
-        }
-        // طبّق البحث الحالي
+        allItems = Array.isArray(data.items)? data.items : [];
+        if(data.note){ warn.hidden=false; warn.textContent=data.note; } else { warn.hidden=true; }
         render(applyFilter(allItems, searchBox.value));
-      } catch (err) {
-        warn.hidden = false;
-        warn.textContent = "خطأ: " + (err?.message || err);
+      }catch(e){
+        warn.hidden=false; warn.textContent="خطأ: "+(e?.message||e);
         render([]);
-      } finally {
-        showSpinner(false);
-      }
+      }finally{ showSpinner(false); }
     }
 
-    // ضغط وتنزيل كل العناصر الظاهرة في ZIP
-    async function downloadVisibleAsZip() {
-      if (!lastRendered.length) return;
+    // ZIP داخل المتصفح من "نفس روابط الجدول" فقط – لا أي استعلام بيانات جديد
+    async function downloadVisibleAsZip(){
+      if(!lastRendered.length) return;
 
       showSpinner(true);
-      warn.hidden = true;
+      warn.hidden=true;
 
       const zip = new JSZip();
-      let ok = 0, fail = 0;
+      let ok=0, fail=0;
 
-      // اسم الملف النهائي
-      const q = (searchBox.value || "").trim();
-      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const q=(searchBox.value||"").trim();
+      const stamp=new Date().toISOString().replace(/[:.]/g,"-");
       const zipName = q ? `declarations_filtered_${safeName(q)}_${stamp}.zip`
                         : `declarations_${stamp}.zip`;
 
-      for (const it of lastRendered) {
+      // نجلب البايتس من نفس روابط الملفات (مش من الـ API/DB)
+      for(const it of lastRendered){
         const url = it.download_url;
         const periodOrName = it.period ? String(it.period) : baseName(it.key);
-        const filename = safeName(periodOrName || baseName(url) || `file_${ok + fail + 1}`);
-
-        try {
-          const resp = await fetch(url); // لازم CORS يسمح
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const filename = safeName(periodOrName || baseName(url) || `file_${ok+fail+1}`);
+        try{
+          const resp = await fetch(url);            // لازم CORS يسمح
+          if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const blob = await resp.blob();
-          const arrayBuf = await blob.arrayBuffer();
-          zip.file(filename, arrayBuf);
+          const buf = await blob.arrayBuffer();
+          zip.file(filename, buf);
           ok++;
-        } catch (e) {
-          fail++;
-          // لو عايز تعرض الأخطاء بالتفصيل:
-          // console.warn("فشل تنزيل:", filename, e);
-        }
+        }catch(e){ fail++; }
       }
 
-      try {
-        const zipBlob = await zip.generateAsync({ type: "blob" });
+      try{
+        const zipBlob = await zip.generateAsync({type:"blob"});
         const url = URL.createObjectURL(zipBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = zipName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const a=document.createElement("a");
+        a.href=url; a.download=zipName;
+        document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
 
-        if (fail > 0) {
-          warn.hidden = false;
-          warn.textContent = `تم تنزيل ${ok} ملفًا، وفشل ${fail}. (قد يكون السبب صلاحيات CORS في الروابط)`;
+        if(fail>0){
+          warn.hidden=false;
+          warn.textContent=`تم تضمين ${ok} ملفًا، وفشل ${fail}. (غالبًا CORS في روابط الملفات)`;
         }
-      } catch (e) {
-        warn.hidden = false;
-        warn.textContent = "تعذّر إنشاء ملف ZIP.";
-      } finally {
+      }catch(_){
+        warn.hidden=false; warn.textContent="تعذّر إنشاء ملف ZIP.";
+      }finally{
         showSpinner(false);
       }
     }
 
-    // init
-    (function () {
+    // ===== init =====
+    (function(){
       $("reloadBtn").addEventListener("click", fetchData);
-      searchBox.addEventListener("input", () => {
-        render(applyFilter(allItems, searchBox.value));
-      });
+      searchBox.addEventListener("input", ()=>render(applyFilter(allItems, searchBox.value)));
       zipBtn.addEventListener("click", downloadVisibleAsZip);
 
-      if (getUserId()) fetchData();
-      else who.textContent = "لا يوجد userId في sessionStorage";
+      if(getUserId()) fetchData();
+      else who.textContent="لا يوجد userId في sessionStorage";
     })();
   </script>
 </body>
-
 </html>
