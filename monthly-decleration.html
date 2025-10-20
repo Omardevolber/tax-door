@@ -76,15 +76,11 @@
   </div>
 
   <script>
-    // ===== إعدادات =====
-    const LAMBDA_BASE = "https://YOURID.execute-api.us-east-1.amazonaws.com/prod";
-    const API_FETCH   = `${LAMBDA_BASE}/tax-door-fetch`;
-    const API_PACKAGE = `${LAMBDA_BASE}/tax-door-package`;
-
+    // نفس الـ API الواحد
+    const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
     const DEFAULT_DOOR = "old-door";
     const DEFAULT_FILETYPE = "اقرارات";
 
-    // ===== DOM =====
     const $ = id => document.getElementById(id);
     const spinner=$("spinner"), tbody=$("tbody"), emptyBox=$("empty"),
           warn=$("warn"), who=$("who"), searchBox=$("searchBox"), zipBtn=$("zipBtn");
@@ -155,7 +151,8 @@
       }
       showSpinner(true); who.textContent=`المستخدم: ${userId}`;
       try{
-        const res=await fetch(API_FETCH,{
+        // action غير مُرسل → FETCH افتراضي
+        const res=await fetch(API_URL,{
           method:"POST", headers:{"Content-Type":"application/json"},
           body:JSON.stringify({userId, door:DEFAULT_DOOR, fileType:DEFAULT_FILETYPE})
         });
@@ -179,7 +176,6 @@
     }
 
     async function downloadZipServerSide(){
-      // نبني من "الجدول فقط"
       const rows = Array.from(tbody.querySelectorAll("tr"));
       const items = rows.map((tr, idx)=>{
         const nameCell = tr.querySelector("td.name");
@@ -191,11 +187,13 @@
 
       showSpinner(true); warn.hidden=true;
       try{
-        const zipName = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
-        const res = await fetch(API_PACKAGE, {
+        const zip_name = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
+
+        // نفس الـ API لكن مع action:"package"
+        const res = await fetch(API_URL, {
           method:"POST",
           headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ items, zip_name: zipName })
+          body: JSON.stringify({ action: "package", items, zip_name })
         });
 
         let zipBlob;
@@ -208,11 +206,13 @@
           zipBlob = b64ToBlob(j.body, "application/zip");
         }
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(zipBlob); a.download = zipName;
+        a.href = URL.createObjectURL(zipBlob); a.download = zip_name;
         document.body.appendChild(a); a.click(); a.remove();
       }catch(e){
         warn.hidden=false; warn.textContent="تعذّر إنشاء ZIP على الخادوم.";
-      }finally{ showSpinner(false); }
+      }finally{
+        showSpinner(false);
+      }
     }
 
     // init
