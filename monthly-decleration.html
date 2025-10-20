@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>إقرارات القيمة المضافة</title>
+  <title>إقرارات المستخدم</title>
   <style>
-    :root{--bg:#f6f8fb;--card:#fff;--text:#0c223a;--muted:#5d6b7a;--line:#e6edf5;--acc:#2563eb;--acc-2:#1d4ed8;--ok:#16a34a;--warn:#b45309;--bad:#dc2626;--br:16px}
+    :root{
+      --bg:#f6f8fb;--card:#fff;--text:#0c223a;--muted:#5d6b7a;--line:#e6edf5;
+      --acc:#2563eb;--acc-2:#1d4ed8;--ok:#16a34a;--warn:#b45309;--bad:#dc2626;--br:16px
+    }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
-    .back-btn{position:absolute;top:20px;left:20px;width:50px;height:50px;color:#fff;background:#7eb4ef;border:0;border-radius:50%;box-shadow:0 3px 6px rgba(0,0,0,.2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.3s}
-    .back-btn:hover{background:#789ab9}
-    .back-btn::before{content:"←";font-size:24px;color:#fff}
-    .wrap{max-width:1100px;margin:80px auto;padding:0 20px}
-    .card{background:var(--card);border-radius:var(--br);padding:18px 18px 8px;box-shadow:0 10px 30px rgba(2,6,23,.06);border:1px solid #eef2f7}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:var(--br);padding:18px;box-shadow:0 10px 30px rgba(2,6,23,.06);border:1px solid #eef2f7}
     h1{margin:0 0 6px;font-size:24px;font-weight:700}
     .muted{color:var(--muted);font-size:13px;margin-bottom:10px}
     .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap}
-    .left-tools,.right-tools{display:flex;align-items:center;gap:10px}
-    .btn{appearance:none;border:1px solid #d6e1f0;background:#fff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;transition:.15s;font-weight:600}
-    .btn[disabled]{cursor:not-allowed;opacity:.6}
+    .lft{display:flex;gap:8px;align-items:center}
+    .btn{appearance:none;border:1px solid #d6e1f0;background:#fff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;transition:all .15s ease;font-weight:600}
     .btn.primary{background:var(--acc);border-color:var(--acc-2);color:#fff}
     .btn.primary:hover{background:var(--acc-2)}
-    .input{border:1px solid #d6e1f0;background:#fff;color:#0c223a;padding:10px 12px;border-radius:12px;min-width:260px;outline:none}
+    .btn[disabled]{opacity:.5;cursor:not-allowed}
+    .input{width:360px;max-width:60vw;border:1px solid #d6e1f0;background:#fff;border-radius:12px;padding:10px 12px}
     .table-wrap{margin-top:10px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{background:#f2f6fc;color:#1f2a37;font-weight:700;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
@@ -32,18 +32,16 @@
     .ok{background:#ecfdf5;color:var(--ok);border-color:#bbf7d0}
     .unk{background:#fff7ed;color:var(--warn);border-color:#fed7aa}
     .err{background:#fef2f2;color:var(--bad);border-color:#fecaca}
-    .note{margin-top:10px;color:#8a6114;background:#fff7e6;border:1px solid #ffe2ad;padding:10px 12px;border-radius:12px}
+    .note{margin-top:10px;color:#8a6114;background:#fff7e6;border:1px solid #ffe2ad;padding:10px 12px;border-radius:12px;display:none}
     .empty{padding:18px;text-align:center;color:var(--muted);font-weight:600}
     .spinner{position:fixed;inset:0;background:rgba(255,255,255,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:999}
     .spinner.show{display:flex}
     .spin{width:58px;height:58px;border-radius:50%;border:5px solid rgba(37,99,235,.15);border-top-color:var(--acc);animation:rot 1s linear infinite}
     @keyframes rot{to{transform:rotate(360deg)}}
-    .tools .btn{padding:8px 12px}
+    .cnt{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <button class="back-btn" onclick="window.location.href='index.html'"></button>
-
   <div class="spinner" id="spinner"><div class="spin"></div></div>
 
   <div class="wrap">
@@ -51,26 +49,28 @@
       <h1>إقرارات المستخدم</h1>
 
       <div class="toolbar">
-        <div class="left-tools">
-          <div class="muted" id="who"></div>
-        </div>
-        <div class="right-tools">
-          <input id="searchBox" class="input" placeholder="بحث: اسم الإقرار أو الحالة..." />
+        <div class="lft">
+          <button class="btn" id="reloadBtn">تحديث</button>
           <button class="btn" id="zipBtn" title="تنزيل الحزمة كاملة" disabled>تنزيل الحزمة كاملة</button>
-          <button class="btn primary" id="reloadBtn" title="تحديث البيانات">تحديث</button>
+          <span class="cnt" id="countBox"></span>
+        </div>
+
+        <div class="lft">
+          <input class="input" id="q" placeholder="بحث: اسم الإقرار أو الحالة..." />
+          <span class="muted" id="who"></span>
         </div>
       </div>
 
-      <div id="warn" class="note" hidden></div>
+      <div class="note" id="noteBox"></div>
 
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th style="width:45%">اسم الإقرار</th>
-              <th style="width:25%">حالة الإقرار</th>
-              <th style="width:30%">تنزيل</th>
-            </tr>
+          <tr>
+            <th style="width:45%">اسم الإقرار</th>
+            <th style="width:25%">حالة الإقرار</th>
+            <th style="width:30%">تنزيل</th>
+          </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -85,59 +85,64 @@
     const DEFAULT_DOOR = "old-door";
     const DEFAULT_FILETYPE = "اقرارات";
 
-    // ===== DOM =====
+    // ===== اختصارات DOM =====
     const $ = id => document.getElementById(id);
-    const spinner = $("spinner"), tbody = $("tbody"), emptyBox = $("empty");
-    const warn = $("warn"), who = $("who"), searchBox = $("searchBox"), zipBtn = $("zipBtn");
+    const spinner = $("spinner"), tbody = $("tbody"), emptyBox = $("empty"),
+          who = $("who"), q = $("q"), noteBox = $("noteBox"),
+          zipBtn = $("zipBtn"), countBox = $("countBox");
 
-    // ===== حالة =====
-    let allItems = [];
-    let lastRendered = [];
+    // ===== حالة الصفحة =====
+    const cache = {
+      itemsAll: [],    // كل العناصر من الفetch
+      itemsView: [],   // العناصر الظاهرة بعد الفلتر
+      userId: ""
+    };
 
-    // ===== Helpers =====
-    const showSpinner = (v=true)=>spinner.classList.toggle("show", v);
-    const getUserId = ()=>sessionStorage.getItem("userId")||"";
-    const baseName = key => key?.split("/").pop() || "";
-
+    // ===== أدوات عامة =====
+    function showSpinner(v=true){ spinner.classList.toggle("show", v); }
+    function showNote(text, kind="warn"){
+      noteBox.textContent = text || "";
+      noteBox.style.display = text ? "block" : "none";
+      noteBox.style.color = kind==="ok" ? "#166534" : (kind==="err" ? "#991b1b" : "#8a6114");
+      noteBox.style.background = kind==="ok" ? "#ecfdf5" : (kind==="err" ? "#fef2f2" : "#fff7e6");
+      noteBox.style.borderColor = kind==="ok" ? "#bbf7d0" : (kind==="err" ? "#fecaca" : "#ffe2ad");
+    }
+    function getUserId(){ return sessionStorage.getItem("userId") || ""; }
+    function baseName(key){ return key?.split("/").pop() || ""; }
     function statusBadge(text){
-      const v=(text||"").trim(); let cls="unk";
-      if(/تم\s*الإرسال/.test(v)) cls="ok";
-      else if(/غير|خطأ|failed|error/i.test(v)) cls="err";
-      return `<span class="badge ${cls}">${v||"غير معروف"}</span>`;
+      const v = (text||"").trim();
+      let cls = "unk";
+      if (/تم\s*الإرسال/.test(v)) cls = "ok";
+      else if (/غير|خطأ|failed|error/i.test(v)) cls = "err";
+      return `<span class="badge ${cls}">${v || "غير معروف"}</span>`;
     }
-
-    function extractPeriodNumber(it){
-      if(it.period && /^\d{6}$/.test(it.period)) return +it.period;
-      const m=(baseName(it.key)||"").match(/(\d{6})/); return m? +m[1] : -Infinity;
+    function extractPeriodNumber(item){
+      if (item.period && /^\d{6}$/.test(item.period)) return Number(item.period);
+      const name = baseName(item.key)||"", m = name.match(/(\d{6})/);
+      return m ? Number(m[1]) : -Infinity;
     }
-
     function sortItems(items){
-      return items.slice().sort((a,b)=>{
-        const pa=extractPeriodNumber(a), pb=extractPeriodNumber(b);
-        if(pa!==pb) return pb-pa;
-        const na=(baseName(a.key)||"").toLowerCase(), nb=(baseName(b.key)||"").toLowerCase();
-        return na<nb?1:na>nb?-1:0;
+      return (items||[]).slice().sort((a,b)=>{
+        const pa = extractPeriodNumber(a), pb = extractPeriodNumber(b);
+        if (pa !== pb) return pb - pa;
+        const na = (baseName(a.key)||"").toLowerCase();
+        const nb = (baseName(b.key)||"").toLowerCase();
+        if (na < nb) return 1; if (na > nb) return -1; return 0;
       });
     }
-
-    function applyFilter(items,q){
-      const s=(q||"").trim().toLowerCase();
-      if(!s) return items;
-      return items.filter(it=>{
-        const name = it.period ? String(it.period) : baseName(it.key);
-        const st = (it.status||"")+"";
-        return (name||"").toLowerCase().includes(s) || st.toLowerCase().includes(s);
-      });
+    function directDownload(url){
+      const a=document.createElement("a");
+      a.href=url; a.rel="noopener noreferrer";
+      document.body.appendChild(a); a.click(); a.remove();
     }
 
+    // ===== عرض الجدول =====
     function render(items){
       const sorted = sortItems(Array.isArray(items)?items:[]);
-      lastRendered = sorted;
-      tbody.innerHTML="";
-      emptyBox.hidden = sorted.length!==0;
-      zipBtn.disabled = sorted.length===0;
+      tbody.innerHTML = "";
+      emptyBox.hidden = sorted.length !== 0;
 
-      for(const it of sorted){
+      for (const it of sorted){
         const periodOrName = it.period ? it.period : baseName(it.key);
         const url = it.download_url;
         const st = it.status || "غير معروف";
@@ -146,137 +151,153 @@
         tr.innerHTML = `
           <td class="name">${periodOrName}</td>
           <td>${statusBadge(st)}</td>
-          <td class="tools">
-            <button class="btn dl-btn" data-url="${url.replace(/"/g,'&quot;')}">تنزيل</button>
+          <td>
+            <button class="btn" onclick="directDownload('${url.replace(/'/g,"\\'")}')">تنزيل</button>
           </td>`;
         tbody.appendChild(tr);
       }
 
-      // تنزيل فردي: فتح الرابط مباشرة
-      tbody.querySelectorAll(".dl-btn").forEach(b=>{
-        b.addEventListener("click",()=>{
-          const a=document.createElement("a");
-          a.href=b.dataset.url; a.rel="noopener"; a.download="";
-          document.body.appendChild(a); a.click(); a.remove();
-        });
+      countBox.textContent = sorted.length
+        ? `الظاهرة: ${sorted.length} / الإجمالي: ${cache.itemsAll.length}`
+        : "";
+      zipBtn.disabled = sorted.length === 0;
+      cache.itemsView = sorted;
+    }
+
+    // ===== فلترة البحث =====
+    function applyFilter(){
+      const t = (q.value || "").trim();
+      if (!t){
+        render(cache.itemsAll);
+        return;
+      }
+      const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "i");
+      const filtered = cache.itemsAll.filter(it=>{
+        const name = baseName(it.key)||"";
+        const p = it.period || "";
+        const s = it.status || "";
+        return rx.test(name) || rx.test(p) || rx.test(s);
       });
+      render(filtered);
     }
 
+    // ===== جلب البيانات من اللامبدا =====
     async function fetchData(){
-      const userId=getUserId();
-      if(!userId){
-        who.textContent="لا يوجد userId في sessionStorage";
-        warn.hidden=false; warn.textContent="برجاء تسجيل الدخول أولًا.";
-        render([]); return;
+      cache.userId = getUserId();
+      who.textContent = cache.userId ? cache.userId : "لا يوجد userId في sessionStorage";
+
+      if (!cache.userId){
+        render([]); showNote("أدخل userId في sessionStorage أولًا."); return;
       }
 
-      showSpinner(true);
-      who.textContent=`المستخدم: ${userId}`;
+      showSpinner(true); showNote("");
 
       try{
-        // POST واحد بدون action → FETCH
-        const res=await fetch(API_URL,{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({ userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE })
-        });
-
-        const raw=await res.json();
-        const data=typeof raw?.body==="string" ? JSON.parse(raw.body) : raw;
-        if(!res.ok) throw new Error(data?.message || res.statusText);
-
-        allItems = Array.isArray(data.items) ? data.items : [];
-        if(data.note){ warn.hidden=false; warn.textContent=data.note; } else { warn.hidden=true; }
-        render(applyFilter(allItems, searchBox.value));
-      }catch(e){
-        warn.hidden=false; warn.textContent="خطأ: " + (e?.message || e);
-        render([]);
-      }finally{
-        showSpinner(false);
-      }
-    }
-
-    function b64ToBlob(b64, mime){
-      const bin = atob(b64);
-      const bytes = new Uint8Array(bin.length);
-      for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-      return new Blob([bytes], {type: mime});
-    }
-
-    async function downloadZipServerSide(){
-      // خُد العناصر "من الجدول" فقط — بدون أي فيتش إضافي
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const items = rows.map((tr, idx)=>{
-        const nameCell = tr.querySelector("td.name");
-        const btn = tr.querySelector(".dl-btn");
-        return { url: btn?.dataset.url || "", name: (nameCell?.textContent || `file_${idx+1}`).trim() };
-      }).filter(x => x.url);
-
-      if(!items.length) return;
-
-      showSpinner(true); warn.hidden=true;
-      const zip_name = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
-
-      try{
+        const payload = { userId: cache.userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE };
         const res = await fetch(API_URL, {
           method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ action: "package", items, zip_name })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
 
-        // الأول: جرّب JSON وفيه zip_url
-        let done = false;
-        try{
-          const j = await res.clone().json();
-          if(j?.zip_url){
-            const a = document.createElement("a");
-            a.href = j.zip_url; a.download = j.zip_name || zip_name;
-            document.body.appendChild(a); a.click(); a.remove();
-            done = true;
-          } else if (j?.body) {
-            // fallback لو رجّع body base64 (نسخ قديمة)
-            const zipBlob = b64ToBlob(j.body, "application/zip");
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(zipBlob); a.download = zip_name;
-            document.body.appendChild(a); a.click(); a.remove();
-            done = true;
-          }
-        }catch(_){ /* الاستجابة قد تكون blob */ }
+        const raw = await res.text();
+        console.log("fetch status:", res.status, "raw first 120:", raw.slice(0,120));
+        let data;
+        try{ data = JSON.parse(raw); } catch{ throw new Error("استجابة غير صالحة (ليست JSON)."); }
 
-        if(!done){
-          // fallback: binary zip من الهيدر
-          const ctype = (res.headers.get("content-type")||"").toLowerCase();
-          if(ctype.includes("application/zip")){
-            const zipBlob = await res.blob();
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(zipBlob); a.download = zip_name;
-            document.body.appendChild(a); a.click(); a.remove();
-          }else{
-            const j = await res.json();
-            if(j?.zip_url){
-              const a = document.createElement("a");
-              a.href = j.zip_url; a.download = j.zip_name || zip_name;
-              document.body.appendChild(a); a.click(); a.remove();
-            }else{
-              throw new Error("استجابة غير متوقعة من خدمة الحِزم.");
-            }
-          }
-        }
-      }catch(e){
-        warn.hidden=false; warn.textContent="تعذّر إنشاء وتنزيل الحزمة.";
-      }finally{
+        if (!res.ok){ throw new Error(data?.message || `HTTP ${res.status}`); }
+
+        cache.itemsAll = Array.isArray(data.items) ? data.items : [];
+        render(cache.itemsAll);
+
+        if (data.note){ showNote(data.note, "warn"); }
+      } catch(err){
+        console.error("FETCH error:", err);
+        render([]); showNote("خطأ: " + (err?.message || err), "err");
+      } finally{
         showSpinner(false);
       }
     }
 
-    // ===== init =====
-    (function(){
-      $("reloadBtn").addEventListener("click", fetchData);
-      searchBox.addEventListener("input", ()=>render(applyFilter(allItems, searchBox.value)));
-      zipBtn.addEventListener("click", downloadZipServerSide);
+    // ===== إنشاء وتنزيل الحزمة (باستخدام العناصر الظاهرة فقط) =====
+    async function handlePackageZip(){
+      const items = cache.itemsView || [];
+      if (!items.length){ return showNote("لا توجد عناصر لتجميعها."); }
 
-      if(getUserId()) fetchData();
-      else who.textContent="لا يوجد userId في sessionStorage";
+      zipBtn.setAttribute("disabled","true");
+      showSpinner(true); showNote("");
+
+      try{
+        const zipName = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
+        const payload = { action:"package", items, zip_name: zipName };
+
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const ct = res.headers.get("content-type") || "";
+        const raw = await res.text();
+        console.log("package status:", res.status, "ct:", ct, "raw first 120:", raw.slice(0,120));
+
+        let data = null;
+        try{ data = JSON.parse(raw); }catch{
+          // احتمال API GW يرجّع Base64 نصي لJSON
+          if (/^[A-Za-z0-9+/=\r\n]+$/.test(raw) && raw.length % 4 === 0){
+            try{
+              const decoded = atob(raw.replace(/\s+/g,""));
+              data = JSON.parse(decoded);
+              console.warn("parsed base64 JSON from API Gateway");
+            }catch{}
+          }
+        }
+
+        if (!res.ok){
+          const msg = data?.message || data?.error || `HTTP ${res.status}`;
+          throw new Error(`فشل إنشاء الحزمة: ${msg}`);
+        }
+
+        if (data?.zip_url){
+          directDownload(data.zip_url);
+          showNote(`تم إنشاء الحزمة ${(data.size_bytes?`(${(data.size_bytes/1e6).toFixed(1)} MB)`:``)}.`, "ok");
+          return;
+        }
+
+        // fallback نادر: ZIP باينري
+        if (/application\/zip/i.test(ct) || raw.startsWith("PK")){
+          const blob = raw.startsWith("PK")
+            ? new Blob([new TextEncoder().encode(raw)], {type:"application/zip"})
+            : new Blob([raw], {type:"application/zip"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = zipName;
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+          showNote("تم تحميل الحزمة مباشرة من الاستجابة.", "ok");
+          return;
+        }
+
+        throw new Error("استجابة غير متوقعة من الخادم (لا يوجد zip_url ولا ZIP).");
+      } catch(err){
+        console.error("ZIP error:", err);
+        showNote(`تعذّر إنشاء وتنزيل الحزمة: ${(err && err.message) || err}`, "err");
+      } finally{
+        zipBtn.removeAttribute("disabled");
+        showSpinner(false);
+      }
+    }
+
+    // ===== تهيئة =====
+    (function init(){
+      $("reloadBtn").addEventListener("click", fetchData);
+      zipBtn.addEventListener("click", handlePackageZip);
+      q.addEventListener("input", applyFilter);
+
+      cache.userId = getUserId();
+      who.textContent = cache.userId ? cache.userId : "لا يوجد userId في sessionStorage";
+      if (cache.userId) fetchData();
+      else render([]);
     })();
   </script>
 </body>
