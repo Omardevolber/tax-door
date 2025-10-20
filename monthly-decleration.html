@@ -43,13 +43,17 @@
 </head>
 <body>
   <button class="back-btn" onclick="window.location.href='index.html'"></button>
+
   <div class="spinner" id="spinner"><div class="spin"></div></div>
 
   <div class="wrap">
     <div class="card">
       <h1>إقرارات المستخدم</h1>
+
       <div class="toolbar">
-        <div class="left-tools"><div class="muted" id="who"></div></div>
+        <div class="left-tools">
+          <div class="muted" id="who"></div>
+        </div>
         <div class="right-tools">
           <input id="searchBox" class="input" placeholder="بحث: اسم الإقرار أو الحالة..." />
           <button class="btn" id="zipBtn" title="تنزيل الحزمة كاملة" disabled>تنزيل الحزمة كاملة</button>
@@ -76,18 +80,21 @@
   </div>
 
   <script>
-    // نفس الـ API الواحد
+    // ===== الإعدادات =====
     const API_URL = "https://quygwx9727.execute-api.us-east-1.amazonaws.com/prod/tax-door-fetch";
     const DEFAULT_DOOR = "old-door";
     const DEFAULT_FILETYPE = "اقرارات";
 
+    // ===== DOM =====
     const $ = id => document.getElementById(id);
-    const spinner=$("spinner"), tbody=$("tbody"), emptyBox=$("empty"),
-          warn=$("warn"), who=$("who"), searchBox=$("searchBox"), zipBtn=$("zipBtn");
+    const spinner = $("spinner"), tbody = $("tbody"), emptyBox = $("empty");
+    const warn = $("warn"), who = $("who"), searchBox = $("searchBox"), zipBtn = $("zipBtn");
 
+    // ===== حالة =====
     let allItems = [];
     let lastRendered = [];
 
+    // ===== Helpers =====
     const showSpinner = (v=true)=>spinner.classList.toggle("show", v);
     const getUserId = ()=>sessionStorage.getItem("userId")||"";
     const baseName = key => key?.split("/").pop() || "";
@@ -95,13 +102,16 @@
 
     function statusBadge(text){
       const v=(text||"").trim(); let cls="unk";
-      if(/تم\s*الإرسال/.test(v)) cls="ok"; else if(/غير|خطأ|failed|error/i.test(v)) cls="err";
+      if(/تم\s*الإرسال/.test(v)) cls="ok";
+      else if(/غير|خطأ|failed|error/i.test(v)) cls="err";
       return `<span class="badge ${cls}">${v||"غير معروف"}</span>`;
     }
+
     function extractPeriodNumber(it){
       if(it.period && /^\d{6}$/.test(it.period)) return +it.period;
       const m=(baseName(it.key)||"").match(/(\d{6})/); return m? +m[1] : -Infinity;
     }
+
     function sortItems(items){
       return items.slice().sort((a,b)=>{
         const pa=extractPeriodNumber(a), pb=extractPeriodNumber(b);
@@ -110,6 +120,7 @@
         return na<nb?1:na>nb?-1:0;
       });
     }
+
     function applyFilter(items,q){
       const s=(q||"").trim().toLowerCase();
       if(!s) return items;
@@ -119,6 +130,7 @@
         return (name||"").toLowerCase().includes(s) || st.toLowerCase().includes(s);
       });
     }
+
     function render(items){
       const sorted = sortItems(Array.isArray(items)?items:[]);
       lastRendered = sorted;
@@ -130,18 +142,28 @@
         const periodOrName = it.period ? it.period : baseName(it.key);
         const url = it.download_url;
         const st = it.status || "غير معروف";
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="name">${periodOrName}</td>
           <td>${statusBadge(st)}</td>
-          <td class="tools"><button class="btn dl-btn" data-url="${url.replace(/"/g,'&quot;')}">تنزيل</button></td>`;
+          <td class="tools">
+            <button class="btn dl-btn" data-url="${url.replace(/"/g,'&quot;')}">تنزيل</button>
+          </td>`;
         tbody.appendChild(tr);
       }
+
+      // ربط تنزيل فردي (من الرابط مباشرة – المتصفح يتولى التنزيل)
       tbody.querySelectorAll(".dl-btn").forEach(b=>{
-        b.addEventListener("click",()=>{ const a=document.createElement("a"); a.href=b.dataset.url; a.rel="noopener"; a.download=""; document.body.appendChild(a); a.click(); a.remove(); });
+        b.addEventListener("click",()=>{
+          const a=document.createElement("a");
+          a.href=b.dataset.url; a.rel="noopener"; a.download="";
+          document.body.appendChild(a); a.click(); a.remove();
+        });
       });
     }
 
+    // ===== جلب أولي (FETCH) =====
     async function fetchData(){
       const userId=getUserId();
       if(!userId){
@@ -149,39 +171,50 @@
         warn.hidden=false; warn.textContent="برجاء تسجيل الدخول أولًا.";
         render([]); return;
       }
-      showSpinner(true); who.textContent=`المستخدم: ${userId}`;
-      try{
-        // action غير مُرسل → FETCH افتراضي
-        const res=await fetch(API_URL,{
-          method:"POST", headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({userId, door:DEFAULT_DOOR, fileType:DEFAULT_FILETYPE})
-        });
-        const raw=await res.json();
-        const data=typeof raw?.body==="string"? JSON.parse(raw.body):raw;
-        if(!res.ok) throw new Error(data?.message||res.statusText);
 
-        allItems = Array.isArray(data.items)? data.items : [];
+      showSpinner(true);
+      who.textContent=`المستخدم: ${userId}`;
+
+      try{
+        // POST واحد بدون action → FETCH
+        const res=await fetch(API_URL,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ userId, door: DEFAULT_DOOR, fileType: DEFAULT_FILETYPE })
+        });
+
+        const raw=await res.json();
+        const data=typeof raw?.body==="string" ? JSON.parse(raw.body) : raw;
+        if(!res.ok) throw new Error(data?.message || res.statusText);
+
+        allItems = Array.isArray(data.items) ? data.items : [];
         if(data.note){ warn.hidden=false; warn.textContent=data.note; } else { warn.hidden=true; }
         render(applyFilter(allItems, searchBox.value));
       }catch(e){
-        warn.hidden=false; warn.textContent="خطأ: "+(e?.message||e);
+        warn.hidden=false; warn.textContent="خطأ: " + (e?.message || e);
         render([]);
-      }finally{ showSpinner(false); }
+      }finally{
+        showSpinner(false);
+      }
     }
 
+    // ===== تحويل base64 → Blob (لو الـ API بيرجع JSON) =====
     function b64ToBlob(b64, mime){
-      const bin = atob(b64); const bytes = new Uint8Array(bin.length);
-      for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
       return new Blob([bytes], {type: mime});
     }
 
+    // ===== طلب ZIP سيرفر-سايد (PACKAGE) =====
     async function downloadZipServerSide(){
+      // ابنِ القائمة "من الجدول فقط"
       const rows = Array.from(tbody.querySelectorAll("tr"));
       const items = rows.map((tr, idx)=>{
         const nameCell = tr.querySelector("td.name");
         const btn = tr.querySelector(".dl-btn");
-        return { url: btn?.dataset.url || "", name: (nameCell?.textContent||`file_${idx+1}`).trim() };
-      }).filter(x=>x.url);
+        return { url: btn?.dataset.url || "", name: (nameCell?.textContent || `file_${idx+1}`).trim() };
+      }).filter(x => x.url);
 
       if(!items.length) return;
 
@@ -189,9 +222,9 @@
       try{
         const zip_name = `declarations_${new Date().toISOString().replace(/[:.]/g,"-")}.zip`;
 
-        // نفس الـ API لكن مع action:"package"
+        // نفس API_URL مع action:"package"
         const res = await fetch(API_URL, {
-          method:"POST",
+          method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ action: "package", items, zip_name })
         });
@@ -199,14 +232,18 @@
         let zipBlob;
         const ctype = (res.headers.get("content-type")||"").toLowerCase();
         if(ctype.includes("application/zip")){
+          // بعض الإعدادات قد ترجع binary مباشرة
           zipBlob = await res.blob();
         }else{
+          // النمط الافتراضي: JSON به body base64
           const j = await res.json();
           if(!j?.body) throw new Error("Invalid ZIP response");
           zipBlob = b64ToBlob(j.body, "application/zip");
         }
+
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(zipBlob); a.download = zip_name;
+        a.href = URL.createObjectURL(zipBlob);
+        a.download = zip_name;
         document.body.appendChild(a); a.click(); a.remove();
       }catch(e){
         warn.hidden=false; warn.textContent="تعذّر إنشاء ZIP على الخادوم.";
@@ -215,7 +252,7 @@
       }
     }
 
-    // init
+    // ===== init =====
     (function(){
       $("reloadBtn").addEventListener("click", fetchData);
       searchBox.addEventListener("input", ()=>render(applyFilter(allItems, searchBox.value)));
